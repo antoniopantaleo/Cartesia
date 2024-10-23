@@ -1,0 +1,27 @@
+[tools]
+git-cliff = "2.8.0"
+typos = "1.32.0"
+node = "24.0.2"
+
+[hooks]
+postinstall = '''
+git-cliff --init detailed
+npm install --save-dev @commitlint/cli @commitlint/config-conventional
+echo "export default {extends: ['@commitlint/config-conventional']};" > commitlint.config.mjs
+
+cat <<EOF > .git/hooks/prepare-commit-msg
+#!/usr/bin/env bash
+
+MSG=\$(cat .git/COMMIT_EDITMSG)
+echo \$MSG | npx commitlint
+EOF
+
+chmod +x .git/hooks/prepare-commit-msg
+
+cat <<EOF >> .gitignore
+commitlint.config.mjs
+node_modules
+package-lock.json
+package.json
+EOF
+'''

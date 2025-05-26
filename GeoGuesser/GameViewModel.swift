@@ -62,6 +62,7 @@ final class GameViewModel: Sendable {
     func startNewGame() async {
         await gameEngine.startNewGame()
         print("🎮 Game started, gameStartTime: \(gameStartTime?.description ?? "nil")")
+        UIViewController.updateTimerStartTime(gameStartTime)
         await loadScene()
     }
     
@@ -79,6 +80,7 @@ final class GameViewModel: Sendable {
     func confirmPosition(_ coordinates: Coordinates) async {
         await gameEngine.submitGuess(coordinates)
         print("🎯 Game ended, clearing timer")
+        UIViewController.updateTimerStartTime(nil)
         updateCamera(selectedLocation: coordinates)
     }
     

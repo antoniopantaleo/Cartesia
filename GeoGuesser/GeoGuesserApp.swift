@@ -6,14 +6,25 @@
 //
 
 import SwiftUI
+import Core
+import GameEngine
+import LocationServices
 
 @main
 struct GeoGuesserApp: App {
-    let now = Date.now
-    let viewModel = GameViewModel()
+    let viewModel: GameViewModel
     
     init() {
         UIViewController.swizzleViewWillAppear()
+        
+        let locationService = LocationService()
+        let gameEngine = GameEngine(locationService: locationService)
+        let lookAroundService = LookAroundService()
+        
+        self.viewModel = GameViewModel(
+            gameEngine: gameEngine,
+            lookAroundService: lookAroundService
+        )
     }
     
     var body: some Scene {
@@ -21,17 +32,6 @@ struct GeoGuesserApp: App {
             ContentView(
                 viewModel: viewModel
             )
-//            {
-//                TimelineView(.periodic(from: .now, by: 1)) { context in
-//                    Text(now..<context.date, format: .timeDuration)
-//                        .contentTransition(.numericText(countsDown: true))
-//                        .font(.system(size: 20, weight: .bold, design: .rounded))
-//                        .padding()
-//                        .background(.ultraThinMaterial)
-//                        .clipShape(RoundedRectangle(cornerRadius: 10))
-//                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-//                }
-//            }
         }
     }
 }

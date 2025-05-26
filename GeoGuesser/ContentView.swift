@@ -9,6 +9,9 @@ import SwiftUI
 import MapKit
 import Combine
 import UIKit
+import Core
+import GameEngine
+import LocationServices
 
 struct ContentView: View {
     
@@ -31,17 +34,19 @@ struct ContentView: View {
                             systemImage: "mappin",
                             coordinate: CLLocationCoordinate2D(coordinates: selected)
                         )
-                        MapPolyline(
-                            coordinates: [selected, viewModel.location]
-                                .map(CLLocationCoordinate2D.init(coordinates:)),
-                            contourStyle: .straight
-                        )
-                        .stroke(.blue, lineWidth: 5)
-                        Marker(
-                            "The real location",
-                            systemImage: "flag.pattern.checkered",
-                            coordinate: CLLocationCoordinate2D(coordinates: viewModel.location)
-                        )
+                        if let currentLocation = viewModel.currentLocation {
+                            MapPolyline(
+                                coordinates: [selected, currentLocation]
+                                    .map(CLLocationCoordinate2D.init(coordinates:)),
+                                contourStyle: .straight
+                            )
+                            .stroke(.blue, lineWidth: 5)
+                            Marker(
+                                "The real location",
+                                systemImage: "flag.pattern.checkered",
+                                coordinate: CLLocationCoordinate2D(coordinates: currentLocation)
+                            )
+                        }
                     }
                 }
                 .onTapGesture { point in
@@ -50,7 +55,9 @@ struct ContentView: View {
                         latitude: clLocationCoordinates.latitude,
                         longitude: clLocationCoordinates.longitude
                     )
-                    viewModel.confirmPosition(coordinates)
+                    Task {
+                        await viewModel.confirmPosition(coordinates)
+                    }
                     selected = coordinates
                 }
                 .onChange(of: selected) { _, newValue in
@@ -62,16 +69,18 @@ struct ContentView: View {
                 }
             }
             
-            LookAroundView(
-                scene: $viewModel.scene,
-                isNavigationEnabled: $viewModel.isGameRunning,
-                fullscreen: $viewModel.fullscreen
-            )
-            .frame(width: 150, height: 150)
-            .clipShape(RoundedRectangle(cornerRadius: 15))
-            .safeAreaPadding(.horizontal)
-            .onAppear {
-                viewModel.fullscreen = true
+            if viewModel.isGameRunning {
+                LookAroundView(
+                    scene: $viewModel.scene,
+                    isNavigationEnabled: .constant(true),
+                    fullscreen: $viewModel.fullscreen
+                )
+                .frame(width: 150, height: 150)
+                .clipShape(RoundedRectangle(cornerRadius: 15))
+                .safeAreaPadding(.horizontal)
+                .onAppear {
+                    viewModel.fullscreen = true
+                }
             }
         }
     }
@@ -79,7 +88,14 @@ struct ContentView: View {
 }
 
 #Preview {
+    let locationService = LocationService()
+    let gameEngine = GameEngine(locationService: locationService)
+    let lookAroundService = LookAroundService()
+    
     ContentView(
-        viewModel: GameViewModel()
+        viewModel: GameViewModel(
+            gameEngine: gameEngine,
+            lookAroundService: lookAroundService
+        )
     )
 }

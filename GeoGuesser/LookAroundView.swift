@@ -7,6 +7,8 @@
 
 @preconcurrency import MapKit
 import SwiftUI
+import Core
+import LocationServices
 
 extension MKLookAroundScene: @retroactive @unchecked Sendable {}
 
@@ -28,7 +30,9 @@ struct LookAroundView: UIViewControllerRepresentable {
         guard let scene else { return }
         uiViewController.scene = scene
         uiViewController.isNavigationEnabled = isNavigationEnabled
-        if fullscreen { uiViewController.fullscreen() }
+        if fullscreen { 
+            uiViewController.fullscreen() 
+        }
     }
     
     func makeCoordinator() -> Coordinator {

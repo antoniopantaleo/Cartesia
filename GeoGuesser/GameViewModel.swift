@@ -7,55 +7,88 @@
 
 import Foundation
 @preconcurrency import MapKit
+import Core
+import GameEngine
+import LocationServices
+import Observation
 
 @Observable
 @MainActor
 final class GameViewModel: Sendable {
     
-    let location = Coordinates(
-        latitude: 35.6895,
-        longitude: 139.6917
-    )
-    
     var cameraRegion: MKCoordinateRegion = .init(.world)
-    var isGameRunning: Bool = true
     var scene: MKLookAroundScene?
     var fullscreen = true
     
-    private(set) var measurement: String?
+    private let gameEngine: GameEngineProtocol
+    private let lookAroundService: LookAroundServiceProtocol
     
-    init() {
-        let request = MKLookAroundSceneRequest(
-            coordinate: CLLocationCoordinate2D(coordinates: location)
-        )
-        Task.detached {
-            let scene = try? await request.scene
-            await MainActor.run { [weak self] in
-                self?.scene = scene
-            }
+    var gameState: GameState { gameEngine.gameState }
+    var currentLocation: Coordinates? { gameEngine.currentLocation }
+    
+    var isGameRunning: Bool {
+        switch gameState {
+        case .running: return true
+        default: return false
         }
     }
     
-    func confirmPosition(_ coordinates: Coordinates) {
-        isGameRunning = false
-        let l1 = CLLocation(
-            latitude: coordinates.latitude,
-            longitude: coordinates.longitude
-        )
-        let l2 = CLLocation(
-            latitude: location.latitude,
-            longitude: location.longitude
-        )
+    var gameStartTime: Date? {
+        switch gameState {
+        case .running(let startTime): return startTime
+        default: return nil
+        }
+    }
+    
+    var measurement: String? {
+        switch gameState {
+        case .completed(let result): return result.formattedDistance
+        default: return nil
+        }
+    }
+    
+    init(
+        gameEngine: GameEngineProtocol,
+        lookAroundService: LookAroundServiceProtocol
+    ) {
+        self.gameEngine = gameEngine
+        self.lookAroundService = lookAroundService
         
-        let distance = l1.distance(from: l2)
-        measurement = Measurement(value: distance, unit: UnitLength.meters).formatted()
+        Task {
+            await startNewGame()
+        }
+    }
+    
+    func startNewGame() async {
+        await gameEngine.startNewGame()
+        print("🎮 Game started, gameStartTime: \(gameStartTime?.description ?? "nil")")
+        await loadScene()
+    }
+    
+    private func loadScene() async {
+        guard let location = currentLocation else { return }
+        
+        do {
+            let sceneResult = try await lookAroundService.getScene(for: location)
+            scene = sceneResult as? MKLookAroundScene
+        } catch {
+            print("Failed to load scene: \(error)")
+        }
+    }
+    
+    func confirmPosition(_ coordinates: Coordinates) async {
+        await gameEngine.submitGuess(coordinates)
+        print("🎯 Game ended, clearing timer")
+        updateCamera(selectedLocation: coordinates)
     }
     
     func updateCamera(selectedLocation: Coordinates) {
+        guard let actualLocation = currentLocation else { return }
+        
         let coordinates = [
             selectedLocation,
-            location
-        ].map(CLLocationCoordinate2D.init(coordinates:))
+            actualLocation
+        ].map { CLLocationCoordinate2D(coordinates: $0) }
         
         let minLat = coordinates.map(\.latitude).min()!
         let maxLat = coordinates.map(\.latitude).max()!

@@ -4,6 +4,54 @@ let project = Project(
     name: "GeoGuesser",
     targets: [
         .target(
+            name: "Core",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.antoniopantaleo.GeoGuesser.Core",
+            deploymentTargets: .iOS("18.0"),
+            sources: ["Modules/Core/Sources/**"],
+            settings: .settings(
+                base: [
+                    "SWIFT_VERSION": "6.0",
+                    "SWIFT_STRICT_CONCURRENCY": "complete"
+                ]
+            )
+        ),
+        .target(
+            name: "LocationServices",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.antoniopantaleo.GeoGuesser.LocationServices",
+            deploymentTargets: .iOS("18.0"),
+            sources: ["Modules/LocationServices/Sources/**"],
+            dependencies: [
+                .target(name: "Core")
+            ],
+            settings: .settings(
+                base: [
+                    "SWIFT_VERSION": "6.0",
+                    "SWIFT_STRICT_CONCURRENCY": "complete"
+                ]
+            )
+        ),
+        .target(
+            name: "GameEngine",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.antoniopantaleo.GeoGuesser.GameEngine",
+            deploymentTargets: .iOS("18.0"),
+            sources: ["Modules/GameEngine/Sources/**"],
+            dependencies: [
+                .target(name: "Core")
+            ],
+            settings: .settings(
+                base: [
+                    "SWIFT_VERSION": "6.0",
+                    "SWIFT_STRICT_CONCURRENCY": "complete"
+                ]
+            )
+        ),
+        .target(
             name: "GeoGuesser",
             destinations: .iOS,
             product: .app,
@@ -12,6 +60,11 @@ let project = Project(
             infoPlist: .file(path: "GeoGuesser/Info.plist"),
             sources: ["GeoGuesser/**"],
             resources: ["GeoGuesser/Assets.xcassets/**", "GeoGuesser/Preview Content/**"],
+            dependencies: [
+                .target(name: "Core"),
+                .target(name: "GameEngine"),
+                .target(name: "LocationServices")
+            ],
             settings: .settings(
                 base: [
                     "CODE_SIGN_STYLE": "Automatic",

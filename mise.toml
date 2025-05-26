@@ -18,10 +18,8 @@ EOF
 
 chmod +x .git/hooks/prepare-commit-msg
 
-cat <<EOF >> .gitignore
-commitlint.config.mjs
-node_modules
-package-lock.json
-package.json
-EOF
+[ -z $(cat .gitignore | grep node_modules) ] && echo "node_modules" >> .gitignore
+[ -z $(cat .gitignore | grep package-lock.json) ] && echo "package-lock.json" >> .gitignore
+[ -z $(cat .gitignore | grep package.json) ] && echo "package.json" >> .gitignore
+[ -z $(cat .gitignore | grep commitlint.config.mjs) ] && echo "commitlint.config.mjs" >> .gitignore
 '''

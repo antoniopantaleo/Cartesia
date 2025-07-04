@@ -35,6 +35,22 @@ let project = Project(
             )
         ),
         .target(
+            name: "StartScreen",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.antoniopantaleo.GeoGuesser.StartScreen",
+            deploymentTargets: .iOS("18.0"),
+            sources: ["Modules/StartScreen/Sources/**"],
+            resources: ["Modules/StartScreen/Resources/**"],
+            dependencies: [],
+            settings: .settings(
+                base: [
+                    "SWIFT_VERSION": "6.0",
+                    "SWIFT_STRICT_CONCURRENCY": "complete"
+                ]
+            )
+        ),
+        .target(
             name: "GameEngine",
             destinations: .iOS,
             product: .framework,
@@ -63,7 +79,8 @@ let project = Project(
             dependencies: [
                 .target(name: "Core"),
                 .target(name: "GameEngine"),
-                .target(name: "LocationServices")
+                .target(name: "LocationServices"),
+                .target(name: "StartScreen")
             ],
             settings: .settings(
                 base: [

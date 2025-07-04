@@ -18,7 +18,7 @@ final class GameViewModel: Sendable {
     
     var cameraRegion: MKCoordinateRegion = .init(.world)
     var scene: MKLookAroundScene?
-    var fullscreen = true
+    var fullscreen = false
     
     private let gameEngine: GameEngineProtocol
     private let lookAroundService: LookAroundServiceProtocol

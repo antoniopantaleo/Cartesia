@@ -83,9 +83,11 @@ struct LookAroundView: UIViewControllerRepresentable {
     .frame(width: 400, height: 400)
     .clipShape(RoundedRectangle(cornerRadius: 20))
     .task {
+        let service = LocationService()
+        let coordinates = await service.generateRandomLocation()
         let request = MKLookAroundSceneRequest(coordinate: CLLocationCoordinate2D(
-                latitude: 35.6895,
-                longitude: 139.6917
+                latitude: coordinates.latitude,
+                longitude: coordinates.longitude
             )
         )
         scene = try? await request.scene

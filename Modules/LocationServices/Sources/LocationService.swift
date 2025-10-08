@@ -8,8 +8,12 @@ public final class LocationService: LocationServiceProtocol {
     public init() {}
     
     public func generateRandomLocation() async -> Coordinates {
-        // For now, return Tokyo coordinates - can be enhanced to generate random locations
-        return Coordinates(latitude: 35.6895, longitude: 139.6917)
+        let coordinates: [String: Coordinates] = [
+            "Tokyo": Coordinates(latitude: 35.6895, longitude: 139.6917),
+            "Turin": Coordinates(latitude: 45.06935, longitude: 7.61494),
+            "Oslo": Coordinates(latitude: 59.92485, longitude: 10.75918)
+        ]
+        return coordinates.values.randomElement()!
     }
     
     public func calculateDistance(from: Coordinates, to: Coordinates) -> Double {

@@ -90,11 +90,8 @@ extension UIViewController {
                 .constraint(
                     equalTo: mainViewController.view.safeAreaLayoutGuide.topAnchor
                 ),
-            hostingController.view.leadingAnchor
-                .constraint(
-                    equalTo: mainViewController.view.safeAreaLayoutGuide.leadingAnchor,
-                    constant: 25
-                ),
+            hostingController.view.centerXAnchor
+                .constraint(equalTo: mainViewController.view.safeAreaLayoutGuide.centerXAnchor)
         ]
 )
         
@@ -134,10 +131,6 @@ extension UIViewController {
         
         let lookAroundControllers = findLookAroundViewControllers(in: keyWindow)
         print("🔄 Found \(lookAroundControllers.count) MKLookAroundViewController instances to refresh")
-        
-        for controller in lookAroundControllers {
-            //            controller.addTimerOverlay()
-        }
     }
 }
 

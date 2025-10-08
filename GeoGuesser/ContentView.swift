@@ -40,6 +40,7 @@ struct GameView: View {
     @EnvironmentObject var appState: AppState
     @State private var selected: Coordinates?
     @State private var camera: MapCameraPosition
+    @State private var hiding = true
     
     init(gameSession: GameSession) {
         self.gameSession = gameSession
@@ -95,30 +96,61 @@ struct GameView: View {
                 }
             }
             
-            VStack {
+            HStack {
                 Spacer()
-                HStack {
-                    Spacer()
-                    
-                    VStack(spacing: 15) {
-                        if gameSession.viewModel.isGameRunning {
+                if gameSession.viewModel.isGameRunning {
+                    GeometryReader { proxy in
+                        ZStack(alignment: .leading) {
                             LookAroundView(
                                 scene: $gameSession.viewModel.scene,
                                 isNavigationEnabled: .constant(true),
-                                fullscreen: $gameSession.viewModel.fullscreen
+                                fullscreen: $gameSession.viewModel.fullscreen,
+                                onAppear: {
+                                    print("✨", "appear")
+                                }
                             )
-                            .frame(width: 200, height: 200)
+                            .frame(
+                                width: proxy.frame(in: .local).width,
+                                height: proxy.frame(in: .local).height
+                            )
                             .clipShape(RoundedRectangle(cornerRadius: 20))
                             .shadow(color: .black.opacity(0.3), radius: 10, x: 0, y: 5)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 20)
                                     .stroke(.white, lineWidth: 2)
                             )
+                            
+                            Image(systemName: "map.fill")
+                                .foregroundStyle(.white)
+                                .imageScale(.large)
+                                .frame(
+                                    width: proxy.frame(in: .local).width / 4,
+                                    height: proxy.frame(in: .local).height
+                                )
+                                .background(.ultraThinMaterial)
+                                .clipShape(
+                                    UnevenRoundedRectangle(
+                                        topLeadingRadius: 20,
+                                        bottomLeadingRadius: 20,
+                                        bottomTrailingRadius: 0,
+                                        topTrailingRadius: 0
+                                    )
+                                )
+                                .opacity(hiding ? 1 : 0.5)
+                                .blur(radius: hiding ? 0 : 5)
+
+                                .onTapGesture {
+                                    withAnimation {
+                                        hiding.toggle()
+                                    }
+                                }
                         }
                     }
+                    .frame(width: 200, height: 200)
+                    .padding(.trailing, 10)
+                    .offset(x: hiding ? 150 + 10 : 0)
                 }
-                .padding(.horizontal)
-                .padding(.bottom, 20)
+                
             }
         }
     }
@@ -389,6 +421,13 @@ struct ActionButtonsView: View {
 }
 
 #Preview {
-    ContentView()
+    GameView(
+        gameSession: GameSession(
+            viewModel: GameViewModel(
+                gameEngine: GameEngine(locationService: LocationService()),
+                lookAroundService: LookAroundService()
+            )
+        )
+    )
         .environmentObject(AppState())
 }

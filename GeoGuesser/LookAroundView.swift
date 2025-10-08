@@ -16,6 +16,7 @@ struct LookAroundView: UIViewControllerRepresentable {
     @Binding var scene: MKLookAroundScene?
     @Binding var isNavigationEnabled: Bool
     @Binding var fullscreen: Bool
+    let onAppear: () -> Void
     
     func makeUIViewController(context: Context) -> MKLookAroundViewController {
         let vc = MKLookAroundViewController()
@@ -47,6 +48,12 @@ struct LookAroundView: UIViewControllerRepresentable {
             self.parent = parent
         }
         
+        func lookAroundViewControllerWillPresentFullScreen(
+            _ viewController: MKLookAroundViewController
+        ) {
+            parent.onAppear()
+        }
+        
         func lookAroundViewControllerDidDismissFullScreen(
             _ viewController: MKLookAroundViewController
         ) {
@@ -70,7 +77,8 @@ struct LookAroundView: UIViewControllerRepresentable {
     LookAroundView(
         scene: $scene,
         isNavigationEnabled: .constant(true),
-        fullscreen: .constant(false)
+        fullscreen: .constant(false),
+        onAppear: {}
     )
     .frame(width: 400, height: 400)
     .clipShape(RoundedRectangle(cornerRadius: 20))

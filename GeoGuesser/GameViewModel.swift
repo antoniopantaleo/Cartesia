@@ -10,101 +10,105 @@ import Foundation
 import Core
 import GameEngine
 import LocationServices
-import Observation
 
-@Observable
 @MainActor
-final class GameViewModel: Sendable {
-    
-    var cameraRegion: MKCoordinateRegion = .init(.world)
-    var scene: MKLookAroundScene?
-    var fullscreen = false
-    
+final class GameViewModel: ObservableObject {
+    @Published private(set) var cameraRegion: MKCoordinateRegion = .init(.world)
+    @Published var scene: MKLookAroundScene?
+    @Published private(set) var gameState: GameState = .notStarted
+    @Published private(set) var currentLocation: Coordinates?
+    @Published private(set) var isLoadingScene = false
+
     private let gameEngine: GameEngineProtocol
     private let lookAroundService: LookAroundServiceProtocol
-    
-    var gameState: GameState { gameEngine.gameState }
-    var currentLocation: Coordinates? { gameEngine.currentLocation }
-    
+
     var isGameRunning: Bool {
-        switch gameState {
-        case .running: return true
-        default: return false
-        }
+        if case .running = gameState { return true }
+        return false
     }
-    
+
     var gameStartTime: Date? {
-        switch gameState {
-        case .running(let startTime): return startTime
-        default: return nil
-        }
+        if case .running(let startTime) = gameState { return startTime }
+        return nil
     }
-    
-    var measurement: String? {
-        switch gameState {
-        case .completed(let result): return result.formattedDistance
-        default: return nil
-        }
-    }
-    
+
     init(
         gameEngine: GameEngineProtocol,
         lookAroundService: LookAroundServiceProtocol
     ) {
         self.gameEngine = gameEngine
         self.lookAroundService = lookAroundService
-        
-        Task {
-            await startNewGame()
+
+        Task { [weak self] in
+            await self?.startNewGame()
         }
     }
-    
+
     func startNewGame() async {
         await gameEngine.startNewGame()
-        print("🎮 Game started, gameStartTime: \(gameStartTime?.description ?? "nil")")
-        UIViewController.updateTimerStartTime(gameStartTime)
+        await MainActor.run {
+            gameState = gameEngine.gameState
+            currentLocation = gameEngine.currentLocation
+            cameraRegion = .init(.world)
+        }
+
         await loadScene()
-    }
-    
-    private func loadScene() async {
-        guard let location = currentLocation else { return }
-        
-        do {
-            let sceneResult = try await lookAroundService.getScene(for: location)
-            scene = sceneResult as? MKLookAroundScene
-        } catch {
-            print("Failed to load scene: \(error)")
+        await MainActor.run {
+            focusCameraOnCurrentLocation()
         }
     }
-    
+
+    private func loadScene() async {
+        guard let location = currentLocation else { return }
+
+        await MainActor.run { isLoadingScene = true }
+        do {
+            let sceneResult = try await lookAroundService.getScene(for: location)
+            await MainActor.run {
+                scene = sceneResult as? MKLookAroundScene
+            }
+        } catch {
+            await MainActor.run {
+                scene = nil
+            }
+        }
+        await MainActor.run { isLoadingScene = false }
+    }
+
     func confirmPosition(_ coordinates: Coordinates) async {
         await gameEngine.submitGuess(coordinates)
-        print("🎯 Game ended, clearing timer")
-        UIViewController.updateTimerStartTime(nil)
-        updateCamera(selectedLocation: coordinates)
+        await MainActor.run {
+            gameState = gameEngine.gameState
+            updateCamera(selectedLocation: coordinates)
+        }
     }
-    
+
+    func focusCameraOnCurrentLocation() {
+        guard let location = currentLocation else { return }
+        let span = MKCoordinateSpan(latitudeDelta: 30, longitudeDelta: 30)
+        let coordinate = CLLocationCoordinate2D(coordinates: location)
+        cameraRegion = MKCoordinateRegion(center: coordinate, span: span)
+    }
+
     func updateCamera(selectedLocation: Coordinates) {
         guard let actualLocation = currentLocation else { return }
-        
-        let coordinates = [
-            selectedLocation,
-            actualLocation
-        ].map { CLLocationCoordinate2D(coordinates: $0) }
-        
-        let minLat = coordinates.map(\.latitude).min()!
-        let maxLat = coordinates.map(\.latitude).max()!
-        let minLon = coordinates.map(\.longitude).min()!
-        let maxLon = coordinates.map(\.longitude).max()!
-        
+
+        let coordinates = [selectedLocation, actualLocation]
+            .map { CLLocationCoordinate2D(coordinates: $0) }
+
+        let minLat = coordinates.map(\.latitude).min() ?? actualLocation.latitude
+        let maxLat = coordinates.map(\.latitude).max() ?? actualLocation.latitude
+        let minLon = coordinates.map(\.longitude).min() ?? actualLocation.longitude
+        let maxLon = coordinates.map(\.longitude).max() ?? actualLocation.longitude
+
         let center = CLLocationCoordinate2D(
             latitude: (minLat + maxLat) / 2,
             longitude: (minLon + maxLon) / 2
         )
 
         let span = MKCoordinateSpan(
-            latitudeDelta: (maxLat - minLat) * 2,
-            longitudeDelta: (maxLon - minLon) * 2
+            latitudeDelta: max((maxLat - minLat) * 1.8, 0.1),
+            longitudeDelta: max((maxLon - minLon) * 1.8, 0.1)
         )
 
         cameraRegion = MKCoordinateRegion(center: center, span: span)

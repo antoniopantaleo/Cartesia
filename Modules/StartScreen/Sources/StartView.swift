@@ -1,169 +1,378 @@
 import SwiftUI
 import GameKit
+import MapKit
 
 public struct StartView: View {
-    
     private let startGameAction: () -> Void
+    @State private var alias = "Adventurer"
     @State private var isAnimating = false
+    
+    private let spotlightRegions: [MKCoordinateRegion] = [
+        MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 48.8566, longitude: 2.3522),
+            span: MKCoordinateSpan(latitudeDelta: 25, longitudeDelta: 25)
+        ),
+        MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: -33.8688, longitude: 151.2093),
+            span: MKCoordinateSpan(latitudeDelta: 25, longitudeDelta: 25)
+        ),
+        MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060),
+            span: MKCoordinateSpan(latitudeDelta: 20, longitudeDelta: 20)
+        ),
+        MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 35.6762, longitude: 139.6503),
+            span: MKCoordinateSpan(latitudeDelta: 18, longitudeDelta: 18)
+        )
+    ]
     
     public init(startGameAction: @escaping () -> Void) {
         self.startGameAction = startGameAction
     }
     
     public var body: some View {
-        ZStack {
-            BackgroundView()
-            
-            VStack(spacing: 40) {
-                Spacer()
+            ZStack {
+                AnimatedGradientBackground(isAnimating: $isAnimating)
                 
-                GameTitleView(isAnimating: $isAnimating)
-                
-                Spacer()
-                
-                PlayButtonView(action: startGameAction)
-                
-                Spacer()
-                
-                PlayerInfoView()
-                
-                Spacer()
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 28) {
+                        HeroSection(alias: alias, regions: spotlightRegions)
+                        
+                        StartButton(action: startGameAction)
+                        PlayerFooter(alias: alias)
+                    }
+                    .padding(.vertical, 32)
+                    .padding(.horizontal, 24)
+                }
             }
-            .padding()
+        .task {
+            await MainActor.run {
+                refreshAlias()
+            }
+            GKLocalPlayer.local.authenticateHandler = { _, _ in
+                Task { @MainActor in
+                    refreshAlias()
+                }
+            }
         }
         .onAppear {
-            withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
-                isAnimating.toggle()
-            }
-        }
-        .task {
-            GKLocalPlayer.local.authenticateHandler = { _, error in
-                print("✨", GKLocalPlayer.local.alias)
+            withAnimation(.easeInOut(duration: 4).repeatForever(autoreverses: true)) {
+                isAnimating = true
             }
         }
     }
-}
-
-struct BackgroundView: View {
-    var body: some View {
-        ZStack {
-            Image(.background)
-                .resizable()
-                .ignoresSafeArea(.container, edges: .all)
-                .scaledToFill()
-            
-            LinearGradient(
-                colors: [.clear, .black.opacity(0.3)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-        }
+    
+    @MainActor
+    private func refreshAlias() {
+        let trimmed = GKLocalPlayer.local.displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        alias = trimmed.isEmpty ? "Adventurer" : trimmed
     }
 }
 
-struct GameTitleView: View {
+private struct AnimatedGradientBackground: View {
     @Binding var isAnimating: Bool
     
     var body: some View {
-        VStack(spacing: 20) {
-            HStack {
-                Image(systemName: "globe.americas.fill")
-                    .font(.system(size: 50))
-                    .foregroundStyle(.blue)
-                    .scaleEffect(isAnimating ? 1.1 : 1.0)
+        LinearGradient(
+            colors: [Color(#colorLiteral(red: 0.066, green: 0.058, blue: 0.118, alpha: 1)), Color(#colorLiteral(red: 0.047, green: 0.094, blue: 0.2, alpha: 1))],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+        .overlay(
+            ZStack {
+                Circle()
+                    .fill(Color.blue.opacity(0.25))
+                    .frame(width: 600, height: 600)
+                    .offset(x: isAnimating ? -120 : -40, y: isAnimating ? -200 : -120)
                 
-                Text("GeoGuesser")
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.blue, .cyan],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
+                Circle()
+                    .fill(Color.purple.opacity(0.22))
+                    .frame(width: 520, height: 520)
+                    .offset(x: isAnimating ? 150 : 60, y: isAnimating ? 220 : 140)
+            }
+            .blur(radius: 160)
+        )
+        .animation(.easeInOut(duration: 6).repeatForever(autoreverses: true), value: isAnimating)
+    }
+}
+
+private struct HeroSection: View {
+    let alias: String
+    let regions: [MKCoordinateRegion]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Welcome back, \(alias)")
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+                Text("Where will you drop a pin today?")
+                    .font(.largeTitle.bold())
+                    .foregroundStyle(.primary)
             }
             
-            Text("Explore the world and test your geography skills!")
-                .font(.headline)
-                .foregroundStyle(.white)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+            HeroMapPreview(regions: regions)
+                .frame(height: 200)
+           
+        }
+        .padding(24)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 32, style: .continuous)
+                .fill(.ultraThinMaterial)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 32, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.38), .clear],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.2
+                )
+        )
+    }
+}
+
+private struct HeroMapPreview: View {
+    let regions: [MKCoordinateRegion]
+    @State private var cameraPosition: MapCameraPosition
+    @State private var currentIndex = 0
+    
+    init(regions: [MKCoordinateRegion]) {
+        self.regions = regions
+        if let first = regions.first {
+            _cameraPosition = State(initialValue: .region(first))
+        } else {
+            _cameraPosition = State(initialValue: .region(.init(.world)))
+        }
+    }
+    
+    var body: some View {
+        Map(position: $cameraPosition) {
+            ForEach(SamplePin.examples) { pin in
+                Annotation(pin.title, coordinate: pin.coordinate) {
+                    Circle()
+                        .fill(pin.color.gradient)
+                        .frame(width: 14, height: 14)
+                        .shadow(color: pin.color.opacity(0.4), radius: 8, x: 0, y: 2)
+                }
+            }
+        }
+        .mapStyle(.imagery(elevation: .realistic))
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(
+            LinearGradient(
+                colors: [.clear, .black.opacity(0.35)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        )
+        .task {
+            guard regions.count > 1 else { return }
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(6))
+                currentIndex = (currentIndex + 1) % regions.count
+                let nextRegion = regions[currentIndex]
+                await MainActor.run {
+                    withAnimation(.easeInOut(duration: 2.4)) {
+                        cameraPosition = .region(nextRegion)
+                    }
+                }
+            }
         }
     }
 }
 
-struct PlayButtonView: View {
+private struct SamplePin: Identifiable {
+    let id = UUID()
+    let title: String
+    let coordinate: CLLocationCoordinate2D
+    let color: Color
+    
+    static let examples: [SamplePin] = [
+        SamplePin(
+            title: "Paris",
+            coordinate: CLLocationCoordinate2D(latitude: 48.8566, longitude: 2.3522),
+            color: .cyan
+        ),
+        SamplePin(
+            title: "Sydney",
+            coordinate: CLLocationCoordinate2D(latitude: -33.8688, longitude: 151.2093),
+            color: .orange
+        ),
+        SamplePin(
+            title: "New York",
+            coordinate: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060),
+            color: .pink
+        ),
+        SamplePin(
+            title: "Tokyo",
+            coordinate: CLLocationCoordinate2D(latitude: 35.6762, longitude: 139.6503),
+            color: .green
+        )
+    ]
+}
+
+private struct FeatureHighlights: View {
+    private let columns = [
+        GridItem(.flexible(), spacing: 16),
+        GridItem(.flexible(), spacing: 16)
+    ]
+    
+    private let features = FeatureItem.examples
+    
+    var body: some View {
+        LazyVGrid(columns: columns, spacing: 16) {
+            ForEach(features) { feature in
+                FeatureTile(feature: feature)
+            }
+        }
+    }
+}
+
+private struct FeatureItem: Identifiable {
+    let id = UUID()
+    let title: String
+    let subtitle: String
+    let icon: String
+    let tint: Color
+    
+    static let examples: [FeatureItem] = [
+        FeatureItem(
+            title: "Immersive scenes",
+            subtitle: "Dive into 360º street imagery with one tap.",
+            icon: "viewfinder.circle.fill",
+            tint: .blue
+        ),
+        FeatureItem(
+            title: "Adaptive rounds",
+            subtitle: "Tailored difficulty keeps each guess rewarding.",
+            icon: "sparkles",
+            tint: .purple
+        ),
+        FeatureItem(
+            title: "Speed bonuses",
+            subtitle: "Race the clock to climb the global leaderboard.",
+            icon: "bolt.fill",
+            tint: .orange
+        ),
+        FeatureItem(
+            title: "Travel log",
+            subtitle: "Track every pin you drop around the globe.",
+            icon: "map.fill",
+            tint: .green
+        )
+    ]
+}
+
+private struct FeatureTile: View {
+    let feature: FeatureItem
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Image(systemName: feature.icon)
+                .font(.title2)
+                .foregroundStyle(feature.tint)
+                .padding(12)
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(feature.tint.opacity(0.16))
+                )
+            
+            Text(feature.title)
+                .font(.headline)
+                .foregroundStyle(.primary)
+            
+            Text(feature.subtitle)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .lineLimit(3)
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(.ultraThinMaterial)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(feature.tint.opacity(0.25), lineWidth: 1)
+        )
+    }
+}
+
+private struct StartButton: View {
     let action: () -> Void
-    @State private var isPressed = false
     
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Image(systemName: "play.fill")
-                    .font(.title2)
-                Text("Start Adventure")
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Start exploration")
+                        .font(.title3.weight(.semibold))
+                    Text("Five rounds · New itinerary every game")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.8))
+                }
+                Spacer()
+                Image(systemName: "arrow.right")
+                    .font(.title3.bold())
             }
             .foregroundStyle(.white)
-            .padding(.horizontal, 40)
-            .padding(.vertical, 16)
-            .background(
-                RoundedRectangle(cornerRadius: 25)
-                    .fill(
-                        LinearGradient(
-                            colors: [.blue, .purple],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .shadow(color: .blue.opacity(0.3), radius: 20, x: 0, y: 10)
-            )
-            .scaleEffect(isPressed ? 0.95 : 1.0)
         }
-        .buttonStyle(PlainButtonStyle())
-        .onTapGesture {
-            withAnimation(.easeInOut(duration: 0.1)) {
-                isPressed = true
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation(.easeInOut(duration: 0.1)) {
-                    isPressed = false
-                }
-                action()
-            }
-        }
+        .buttonStyle(PrimaryCTAButtonStyle())
     }
 }
 
-struct PlayerInfoView: View {
+private struct PrimaryCTAButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding(.horizontal, 26)
+            .padding(.vertical, 20)
+            .frame(maxWidth: .infinity)
+            .background(
+                LinearGradient(
+                    colors: [Color.blue, Color.purple],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .stroke(Color.white.opacity(0.35), lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+            .shadow(color: Color.blue.opacity(0.45), radius: 18, x: 0, y: 14)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
+private struct PlayerFooter: View {
+    let alias: String
+    
     var body: some View {
-        HStack {
-            Image(systemName: "person.circle.fill")
-                .font(.title2)
-                .foregroundStyle(.white)
+        VStack(alignment: .leading, spacing: 12) {
+            Divider()
+                .background(Color.white.opacity(0.4))
             
-            VStack(alignment: .leading) {
-                Text("Welcome, \(GKLocalPlayer.local.displayName)")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                
-                Text("Ready to explore?")
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.8))
-            }
+            Label("Signed in as \(alias)", systemImage: "person.crop.circle.fill")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.secondary)
             
-            Spacer()
+            Text("Complete five rounds to unlock the weekly World Tour challenge.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
         }
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 15)
-                .fill(.ultraThinMaterial)
-        )
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
 #Preview {
     StartView { }
+        .preferredColorScheme(.dark)
 }

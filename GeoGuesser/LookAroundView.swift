@@ -32,7 +32,7 @@ struct LookAroundView: UIViewControllerRepresentable {
         uiViewController.scene = scene
         uiViewController.isNavigationEnabled = isNavigationEnabled
         if fullscreen { 
-            uiViewController.fullscreen() 
+//            uiViewController.fullscreen() 
         }
     }
     

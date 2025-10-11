@@ -24,8 +24,8 @@ struct ContentView: View {
                 appState.startNewGame()
             }
         case .game:
-            if let gameSession = appState.gameSession {
-                GameView(gameSession: gameSession)
+            if let viewModel = appState.gameViewModel {
+                GameView(viewModel: viewModel)
                     .environmentObject(appState)
             }
         case .result(let result):

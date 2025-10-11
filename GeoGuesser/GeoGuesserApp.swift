@@ -15,10 +15,6 @@ import StartScreen
 struct GeoGuesserApp: App {
     @StateObject private var appState = AppState()
     
-    init() {
-        UIViewController.swizzleViewWillAppear()
-    }
-    
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -30,13 +26,14 @@ struct GeoGuesserApp: App {
 @MainActor
 class AppState: ObservableObject {
     @Published var currentScreen: AppScreen = .start
-    @Published var gameSession: GameSession?
+    @Published var gameViewModel: GameViewModel?
     
     private let locationService = LocationService()
     private let gameEngine: GameEngine
     private let lookAroundService = LookAroundService()
     
     init() {
+        UIViewController.swizzleViewWillAppear()
         self.gameEngine = GameEngine(locationService: locationService)
     }
     
@@ -45,12 +42,12 @@ class AppState: ObservableObject {
             gameEngine: gameEngine,
             lookAroundService: lookAroundService
         )
-        gameSession = GameSession(viewModel: viewModel)
+        gameViewModel = viewModel
         currentScreen = .game
     }
     
     func endGame() {
-        gameSession = nil
+        gameViewModel = nil
         currentScreen = .start
     }
     
@@ -63,7 +60,7 @@ enum AppScreen: Equatable {
     case start
     case game
     case result(GameResult)
-    
+
     static func == (lhs: AppScreen, rhs: AppScreen) -> Bool {
         switch (lhs, rhs) {
         case (.start, .start), (.game, .game):
@@ -76,13 +73,5 @@ enum AppScreen: Equatable {
         default:
             return false
         }
-    }
-}
-
-class GameSession: ObservableObject {
-    var viewModel: GameViewModel
-    
-    init(viewModel: GameViewModel) {
-        self.viewModel = viewModel
     }
 }

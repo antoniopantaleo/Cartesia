@@ -38,8 +38,5 @@ struct TimerView: View {
         .onReceive(timer) { time in
             currentTime = time
         }
-        .onAppear {
-            print("⏰ TimerView appeared with startTime: \(startTime?.description ?? "nil")")
-        }
     }
 }

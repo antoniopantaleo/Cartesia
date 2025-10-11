@@ -1,0 +1,99 @@
+{
+  "fill" : {
+    "linear-gradient" : [
+      "display-p3:0.88860,0.74880,1.00000,1.00000",
+      "display-p3:0.29601,0.34955,0.59982,1.00000"
+    ]
+  },
+  "groups" : [
+    {
+      "layers" : [
+
+      ],
+      "position" : {
+        "scale" : 0.5,
+        "translation-in-points" : [
+          -261.5097486591535,
+          -224.50099158175274
+        ]
+      },
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    },
+    {
+      "layers" : [
+        {
+          "image-name" : "Group-1.png",
+          "name" : "Group-1",
+          "position" : {
+            "scale" : 0.47,
+            "translation-in-points" : [
+              -223.0011562585605,
+              -201.6188885740768
+            ]
+          }
+        },
+        {
+          "image-name" : "Group-2.png",
+          "name" : "Group-2",
+          "position" : {
+            "scale" : 0.5,
+            "translation-in-points" : [
+              -68.99242486684139,
+              -10.63985742093615
+            ]
+          }
+        }
+      ],
+      "position" : {
+        "scale" : 1,
+        "translation-in-points" : [
+          -8.896459096541792,
+          -25.62539154753176
+        ]
+      },
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    },
+    {
+      "layers" : [
+        {
+          "image-name" : "Group-3.png",
+          "name" : "Group-3",
+          "position" : {
+            "scale" : 0.5,
+            "translation-in-points" : [
+              67.15929280516202,
+              61.31378077631035
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : [
+      "iOS"
+    ]
+  }
+}

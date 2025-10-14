@@ -34,16 +34,26 @@ public struct StartView: View {
             ZStack {
                 AnimatedGradientBackground(isAnimating: $isAnimating)
                 
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 28) {
-                        HeroSection(alias: alias, regions: spotlightRegions)
+                VStack(spacing: 28) {
+                    HeroSection(alias: alias, regions: spotlightRegions)
+                    StartButton(action: startGameAction)
+                    Button("How to play") {
                         
-                        StartButton(action: startGameAction)
-                        PlayerFooter(alias: alias)
                     }
-                    .padding(.vertical, 32)
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 26)
+                    .padding(.vertical, 20)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background {
+                        RoundedRectangle(cornerRadius: 23)
+                            .stroke(style: .init())
+                    }
+                    .contentShape(RoundedRectangle(cornerRadius: 23))
+                    Spacer()
+                    PlayerFooter(alias: alias)
                 }
+                .padding(.vertical, 32)
+                .padding(.horizontal, 24)
+                
             }
         .task {
             await MainActor.run {
@@ -138,26 +148,26 @@ private struct HeroSection: View {
 
 private struct HeroMapPreview: View {
     let regions: [MKCoordinateRegion]
+    @State private var currentRegion: MKCoordinateRegion?
     @State private var cameraPosition: MapCameraPosition
     @State private var currentIndex = 0
     
     init(regions: [MKCoordinateRegion]) {
         self.regions = regions
-        if let first = regions.first {
-            _cameraPosition = State(initialValue: .region(first))
-        } else {
-            _cameraPosition = State(initialValue: .region(.init(.world)))
-        }
+        self.currentRegion = regions.first
+        _cameraPosition = State(initialValue: .region(.init(.world)))
+        
     }
     
     var body: some View {
         Map(position: $cameraPosition) {
-            ForEach(SamplePin.examples) { pin in
-                Annotation(pin.title, coordinate: pin.coordinate) {
+            ForEach(regions, id: \.center.latitude) { region in
+            
+                Annotation("City", coordinate: region.center) {
                     Circle()
-                        .fill(pin.color.gradient)
+                        .fill(.yellow)
                         .frame(width: 14, height: 14)
-                        .shadow(color: pin.color.opacity(0.4), radius: 8, x: 0, y: 2)
+                        .shadow(color: .blue.opacity(0.4), radius: 8, x: 0, y: 2)
                 }
             }
         }
@@ -174,16 +184,13 @@ private struct HeroMapPreview: View {
         .task {
             guard regions.count > 1 else { return }
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(6))
+                try? await Task.sleep(for: .seconds(2))
                 currentIndex = (currentIndex + 1) % regions.count
                 let nextRegion = regions[currentIndex]
-                await MainActor.run {
-                    withAnimation(.easeInOut(duration: 2.4)) {
-                        cameraPosition = .region(nextRegion)
-                    }
-                }
+                cameraPosition = .region(nextRegion)
             }
         }
+        .animation(.bouncy, value: cameraPosition)
     }
 }
 
@@ -375,4 +382,26 @@ private struct PlayerFooter: View {
 #Preview {
     StartView { }
         .preferredColorScheme(.dark)
+}
+
+#Preview("Hero Map", traits: .sizeThatFitsLayout) {
+    HeroMapPreview(regions: [
+        MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 48.8566, longitude: 2.3522),
+            span: MKCoordinateSpan(latitudeDelta: 25, longitudeDelta: 25)
+        ),
+        MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: -33.8688, longitude: 151.2093),
+            span: MKCoordinateSpan(latitudeDelta: 25, longitudeDelta: 25)
+        ),
+        MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060),
+            span: MKCoordinateSpan(latitudeDelta: 20, longitudeDelta: 20)
+        ),
+        MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 35.6762, longitude: 139.6503),
+            span: MKCoordinateSpan(latitudeDelta: 18, longitudeDelta: 18)
+        )
+    ])
+    .frame(width: 300, height: 300)
 }

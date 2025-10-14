@@ -118,22 +118,32 @@ struct GameView: View {
         .padding(.top, 12)
     }
     
+    private var confBinging: Binding<Bool> {
+        .init(
+            get: { !lookAroundExpanded },
+            set: { value in
+                lookAroundExpanded = !value
+            }
+        )
+    }
+    
     private var bottomControls: some View {
-        VStack(spacing: 16) {
+        VStack(alignment: .leading, spacing: 16) {
             if let selectedCoordinates {
                 GuessConfirmationCard(
                     coordinates: selectedCoordinates,
                     isSubmitting: isSubmittingGuess,
+                    isExpanded: confBinging,
                     confirmAction: confirmGuess,
                     clearAction: { withAnimation(.spring()) { self.selectedCoordinates = nil } }
                 )
             }
-            
             LookAroundPanel(
                 scene: $viewModel.scene,
                 isLoading: viewModel.isLoadingScene,
                 isExpanded: $lookAroundExpanded
             )
+            
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 24)
@@ -142,6 +152,7 @@ struct GameView: View {
     private func dropPin(at coordinate: CLLocationCoordinate2D) {
         let coordinates = Coordinates(latitude: coordinate.latitude, longitude: coordinate.longitude)
         withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
+            lookAroundExpanded = false
             selectedCoordinates = coordinates
             showInstructionBadge = false
         }
@@ -200,46 +211,69 @@ private struct InstructionBadge: View {
 private struct GuessConfirmationCard: View {
     let coordinates: Coordinates
     let isSubmitting: Bool
+    @Binding var isExpanded: Bool
     let confirmAction: () -> Void
     let clearAction: () -> Void
     
+    @State private var name: String?
+    @Namespace private var animation
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack {
-                Label("Your guess", systemImage: "mappin.and.ellipse")
-                    .font(.headline)
-                Spacer()
-                Button(action: clearAction) {
-                    Text("Reset")
-                        .font(.subheadline.weight(.semibold))
-                }
-                .buttonStyle(.borderless)
-            }
-            
-            HStack(spacing: 24) {
-                coordinateItem(title: "Latitude", value: latitudeText)
-                coordinateItem(title: "Longitude", value: longitudeText)
-            }
-            
-            Button(action: confirmAction) {
-                HStack {
-                    if isSubmitting {
-                        ProgressView()
-                            .progressViewStyle(.circular)
-                    } else {
-                        Image(systemName: "checkmark.circle.fill")
+        Group {
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 18) {
+                    HStack {
+                        Label(name ?? "...", systemImage: "mappin.and.ellipse")
+                            .font(.headline)
+                            .contentTransition(.interpolate)
+                            .matchedGeometryEffect(id: "block", in: animation)
+                        Spacer()
+                        Button(action: clearAction) {
+                            Text("Reset")
+                                .font(.subheadline.weight(.semibold))
+                        }
+                        .buttonStyle(.borderless)
                     }
-                    Text(isSubmitting ? "Submitting…" : "Confirm guess")
-                        .font(.headline)
-                        .fontWeight(.semibold)
+                    
+                    HStack(spacing: 24) {
+                        coordinateItem(title: "Latitude", value: latitudeText)
+                        coordinateItem(title: "Longitude", value: longitudeText)
+                    }
+                    .contentTransition(.numericText())
+                    
+                    Button(action: confirmAction) {
+                        HStack {
+                            if isSubmitting {
+                                ProgressView()
+                                    .progressViewStyle(.circular)
+                            } else {
+                                Image(systemName: "checkmark.circle.fill")
+                            }
+                            Text(isSubmitting ? "Submitting…" : "Confirm guess")
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(PrimaryGuessButtonStyle(isLoading: isSubmitting))
+                    .disabled(isSubmitting)
                 }
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                Image(systemName: "mappin.and.ellipse")
+                    .resizable()
+                    .frame(maxWidth: 20, maxHeight: 20, alignment: .leading)
+                    .scaledToFit()
+                    .aspectRatio(1, contentMode: .fit)
+                    .matchedGeometryEffect(id: "block", in: animation)
+                    .onTapGesture {
+                        withAnimation {
+                            isExpanded = true
+                        }
+                    }
             }
-            .buttonStyle(PrimaryGuessButtonStyle(isLoading: isSubmitting))
-            .disabled(isSubmitting)
         }
         .padding(22)
-        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(.ultraThinMaterial)
@@ -248,6 +282,23 @@ private struct GuessConfirmationCard: View {
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .stroke(Color.white.opacity(0.28), lineWidth: 1)
         )
+        .onChange(of: coordinates) { 
+            Task { await calculateName() }
+        }
+        .task { await calculateName() }
+    }
+    
+    private func calculateName() async {
+        if #available(iOS 26.0, *) {
+            let location = CLLocation(
+                latitude: coordinates.latitude,
+                longitude: coordinates.longitude
+            )
+            guard let request = MKReverseGeocodingRequest(location: location), let items = try? await request.mapItems, let cityName = items.first?.addressRepresentations?.cityName, !cityName.isEmpty else {
+                return name = "Your guess"
+            }
+            name = cityName
+        }
     }
     
     private var latitudeText: String {
@@ -269,6 +320,13 @@ private struct GuessConfirmationCard: View {
         }
     }
 }
+
+@available(iOS 26.0, *)
+extension MKReverseGeocodingRequest: @retroactive @unchecked Sendable {}
+
+@available(iOS 26.0, *)
+extension MKMapItem: @retroactive @unchecked Sendable {}
+
 
 private struct PrimaryGuessButtonStyle: ButtonStyle {
     let isLoading: Bool
@@ -302,7 +360,7 @@ private struct LookAroundPanel: View {
     @Binding var isExpanded: Bool
     
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: isExpanded ? 16 : 0) {
             HStack {
                 Label("Immersive look around", systemImage: "viewfinder.circle")
                     .font(.headline)
@@ -340,7 +398,7 @@ private struct LookAroundPanel: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-            .frame(height: isExpanded ? 260 : 170)
+            .frame(height: isExpanded ? 260 : 0)
         }
         .padding(22)
         .frame(maxWidth: .infinity)
@@ -355,7 +413,7 @@ private struct LookAroundPanel: View {
     }
     
     private func toggleExpanded() {
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+        withAnimation(.easeInOut) {
             isExpanded.toggle()
         }
     }

@@ -56,13 +56,9 @@ public struct StartView: View {
                 
             }
         .task {
-            await MainActor.run {
-                refreshAlias()
-            }
+            refreshAlias()
             GKLocalPlayer.local.authenticateHandler = { _, _ in
-                Task { @MainActor in
-                    refreshAlias()
-                }
+                refreshAlias()
             }
         }
         .onAppear {
@@ -72,7 +68,6 @@ public struct StartView: View {
         }
     }
     
-    @MainActor
     private func refreshAlias() {
         let trimmed = GKLocalPlayer.local.displayName.trimmingCharacters(in: .whitespacesAndNewlines)
         alias = trimmed.isEmpty ? "Adventurer" : trimmed

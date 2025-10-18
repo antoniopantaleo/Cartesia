@@ -10,8 +10,8 @@ import MapKit
 import SwiftUI
 
 // Global reference to track timer start time
-@MainActor private var timerStartTime: Date?
-@MainActor private var timerWindow: UIWindow?
+private var timerStartTime: Date?
+private var timerWindow: UIWindow?
 
 extension UIViewController {
     public static func swizzleViewWillAppear() {

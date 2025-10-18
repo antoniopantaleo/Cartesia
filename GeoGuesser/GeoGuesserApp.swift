@@ -25,8 +25,7 @@ struct GeoGuesserApp: App {
     }
 }
 
-@MainActor
-class AppState: ObservableObject {
+final class AppState: ObservableObject {
     @Published var currentScreen: AppScreen = .start
     @Published var gameViewModel: GameViewModel?
     

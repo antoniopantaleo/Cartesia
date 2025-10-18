@@ -1,7 +1,6 @@
 import Foundation
 
-@MainActor
-public protocol GameEngineProtocol: AnyObject, Sendable {
+public protocol GameEngineProtocol: AnyObject {
     var gameState: GameState { get }
     var currentLocation: Coordinates? { get }
     
@@ -9,15 +8,13 @@ public protocol GameEngineProtocol: AnyObject, Sendable {
     func submitGuess(_ coordinates: Coordinates) async
     func resetGame()
 }
-
-@MainActor 
-public protocol LocationServiceProtocol: AnyObject, Sendable {
+ 
+public protocol LocationServiceProtocol: AnyObject {
     func generateRandomLocation() async -> Coordinates
     func calculateDistance(from: Coordinates, to: Coordinates) -> Double
     func formatDistance(_ distance: Double) -> String
 }
 
-@MainActor
-public protocol LookAroundServiceProtocol: AnyObject, Sendable {
+public protocol LookAroundServiceProtocol: AnyObject {
     func getScene(for coordinates: Coordinates) async throws -> Any?
 }

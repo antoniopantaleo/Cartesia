@@ -63,10 +63,8 @@ public struct GameView: View {
         .task {
             guard showInstructionBadge else { return }
             try? await Task.sleep(for: .seconds(6))
-            await MainActor.run {
-                withAnimation(.easeInOut(duration: 0.4)) {
-                    showInstructionBadge = false
-                }
+            withAnimation(.easeInOut(duration: 0.4)) {
+                showInstructionBadge = false
             }
         }
         .onDisappear {
@@ -179,7 +177,7 @@ public struct GameView: View {
     
     private func confirmGuess() {
         guard let guess = selectedCoordinates, !isSubmittingGuess else { return }
-        Task { @MainActor in
+        Task {
             isSubmittingGuess = true
             await viewModel.confirmPosition(guess)
             isSubmittingGuess = false
@@ -445,7 +443,6 @@ private struct LookAroundPanel: View {
 
 // MARK: - Preview Helpers
 
-@MainActor
 private final class PreviewGameEngine: GameEngineProtocol {
     var gameState: GameState = .running(startTime: .now)
     var currentLocation: Coordinates? = .init(latitude: 48.8584, longitude: 2.2945)
@@ -473,7 +470,6 @@ private final class PreviewGameEngine: GameEngineProtocol {
     }
 }
 
-@MainActor
 private final class PreviewLookAroundService: LookAroundServiceProtocol {
     func getScene(for coordinates: Coordinates) async throws -> Any? {
         nil

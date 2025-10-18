@@ -13,7 +13,9 @@ let project = Project(
             settings: .settings(
                 base: [
                     "SWIFT_VERSION": "6.0",
-                    "SWIFT_STRICT_CONCURRENCY": "complete"
+                    "SWIFT_STRICT_CONCURRENCY": "complete",
+                    "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor",
+                    "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
                 ]
             )
         ),
@@ -30,7 +32,9 @@ let project = Project(
             settings: .settings(
                 base: [
                     "SWIFT_VERSION": "6.0",
-                    "SWIFT_STRICT_CONCURRENCY": "complete"
+                    "SWIFT_STRICT_CONCURRENCY": "complete",
+                    "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor",
+                    "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
                 ]
             )
         ),
@@ -47,7 +51,9 @@ let project = Project(
             settings: .settings(
                 base: [
                     "SWIFT_VERSION": "6.0",
-                    "SWIFT_STRICT_CONCURRENCY": "complete"
+                    "SWIFT_STRICT_CONCURRENCY": "complete",
+                    "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor",
+                    "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
                 ]
             )
         ),
@@ -65,7 +71,9 @@ let project = Project(
             settings: .settings(
                 base: [
                     "SWIFT_VERSION": "6.0",
-                    "SWIFT_STRICT_CONCURRENCY": "complete"
+                    "SWIFT_STRICT_CONCURRENCY": "complete",
+                    "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor",
+                    "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
                 ]
             )
         ),

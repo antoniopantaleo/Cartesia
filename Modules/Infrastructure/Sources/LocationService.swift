@@ -2,7 +2,6 @@ import Foundation
 import CoreLocation
 import GeoDomain
 
-@MainActor
 public final class LocationService: LocationServiceProtocol {
     
     public init() {}

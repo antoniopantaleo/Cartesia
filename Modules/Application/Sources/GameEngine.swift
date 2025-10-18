@@ -3,7 +3,6 @@ import GeoDomain
 import Observation
 
 @Observable
-@MainActor
 public final class GameEngine: GameEngineProtocol {
     public private(set) var gameState: GameState = .notStarted
     public private(set) var currentLocation: Coordinates?

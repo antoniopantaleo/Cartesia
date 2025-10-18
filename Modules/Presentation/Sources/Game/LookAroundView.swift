@@ -39,7 +39,6 @@ struct LookAroundView: UIViewControllerRepresentable {
         Coordinator(self)
     }
     
-    @MainActor
     final class Coordinator: NSObject, @preconcurrency MKLookAroundViewControllerDelegate {
         private let parent: LookAroundView
         

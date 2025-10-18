@@ -20,6 +20,7 @@ struct GeoGuesserApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(appState)
+                .colorScheme(.dark)
         }
     }
 }

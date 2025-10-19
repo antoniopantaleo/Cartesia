@@ -70,6 +70,9 @@ public struct StartView: View {
                     .contentShape(RoundedRectangle(cornerRadius: 23))
                     .foregroundStyle(.primary)
                     Spacer()
+                    Text("v0.1-beta")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .foregroundStyle(.secondary)
                 }
                 .padding(.vertical, 32)
                 .padding(.horizontal, 24)

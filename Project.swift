@@ -1,5 +1,8 @@
 import ProjectDescription
 
+let marketingVersion = "1.0.0-alpha"
+let buildNumber = "1"
+
 let project = Project(
     name: "GeoGuesser",
     targets: [
@@ -117,7 +120,8 @@ let project = Project(
                 .target(name: "GeoPresentation")
             ],
             settings: .settings(
-                base: [
+                base: [                    "MARKETING_VERSION": .string(marketingVersion),
+                    "CURRENT_PROJECT_VERSION": .string(buildNumber),
 "ASSETCATALOG_COMPILER_APPICON_NAME": "Pangea",
                     "ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS": "YES",
                     "ENABLE_USER_SCRIPT_SANDBOXING": "YES",

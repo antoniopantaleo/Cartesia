@@ -15,6 +15,7 @@ public final class GameViewModel: ObservableObject {
     @Published public private(set) var gameState: GameState = .notStarted
     @Published public private(set) var currentLocation: Coordinates?
     @Published public private(set) var isLoadingScene = false
+    @Published public private(set) var isLoading = true
 
     private let gameEngine: GameEngineProtocol
     private let lookAroundService: LookAroundServiceProtocol
@@ -42,6 +43,8 @@ public final class GameViewModel: ObservableObject {
     }
 
     public func startNewGame() async {
+        isLoading = true
+        defer { isLoading = false }
         await gameEngine.startNewGame()
         gameState = gameEngine.gameState
         currentLocation = gameEngine.currentLocation

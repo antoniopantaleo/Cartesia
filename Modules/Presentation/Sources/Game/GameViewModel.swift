@@ -51,7 +51,6 @@ public final class GameViewModel: ObservableObject {
         cameraRegion = .init(.world)
 
         await loadScene()
-        focusCameraOnCurrentLocation()
     }
 
     private func loadScene() async {

@@ -38,7 +38,7 @@ let project = Project(
             name: "StartScreen",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.antoniopantaleo.GeoGuesser.StartScreen",
+            bundleId: ".GeoGuesser.StartScreen",
             deploymentTargets: .iOS("18.0"),
             sources: ["Modules/StartScreen/Sources/**"],
             resources: ["Modules/StartScreen/Resources/**"],

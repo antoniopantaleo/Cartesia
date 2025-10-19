@@ -1,12 +1,12 @@
 import Foundation
 
-public enum GameState: Sendable {
+public enum GameState {
     case notStarted
     case running(startTime: Date)
     case completed(result: GameResult)
 }
 
-public struct GameResult: Sendable {
+public struct GameResult {
     public let distance: Double
     public let formattedDistance: String
     public let actualLocation: Coordinates

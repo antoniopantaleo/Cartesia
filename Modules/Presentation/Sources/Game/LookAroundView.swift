@@ -9,8 +9,6 @@
 import SwiftUI
 import GeoDomain
 
-extension MKLookAroundScene: @retroactive @unchecked Sendable {}
-
 struct LookAroundView: UIViewControllerRepresentable {
     @Binding var scene: MKLookAroundScene?
     @Binding var isNavigationEnabled: Bool

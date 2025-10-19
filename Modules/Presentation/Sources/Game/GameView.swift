@@ -8,7 +8,7 @@
 import SwiftUI
 import Combine
 import GeoDomain
-import MapKit
+@preconcurrency import MapKit
 import UIKit
 
 public struct GameView: View {
@@ -16,7 +16,7 @@ public struct GameView: View {
     private let onResult: (GameResult) -> Void
     @State private var selectedCoordinates: Coordinates?
     @State private var cameraPosition: MapCameraPosition
-    @State private var lookAroundExpanded = false
+    @State private var lookAroundExpanded = true
     @State private var isSubmittingGuess = false
     @State private var showInstructionBadge = true
     
@@ -33,26 +33,33 @@ public struct GameView: View {
         ZStack {
             mapLayer
         }
-        .ignoresSafeArea()
-        
-        .safeAreaInset(edge: .bottom) {
-            bottomControls
-        }
+        .ignoresSafeArea(.keyboard, edges: .all)
+        .overlay(alignment: .bottom) { bottomControls.padding(.bottom) }
         .overlay(alignment: .top) {
             VStack(spacing: 12) {
-                topControls
-                if showInstructionBadge, selectedCoordinates == nil {
-                    InstructionBadge()
-                        .transition(.asymmetric(insertion: .opacity.combined(with: .scale), removal: .opacity))
+                if !viewModel.isLoading {
+                    if showInstructionBadge, selectedCoordinates == nil {
+                        InstructionBadge()
+                            .transition(.asymmetric(insertion: .opacity.combined(with: .scale), removal: .opacity))
+                    }
                 }
             }
             .padding(.top, 12)
+        }
+        .overlay {
+            if viewModel.isLoading {
+                ProgressView()
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .frame(width: 100, height: 100)
+                            .foregroundStyle(.ultraThinMaterial)
+                    )
+            }
         }
         .onReceive(viewModel.$cameraRegion.dropFirst()) { region in
             cameraPosition = .region(region)
         }
         .onReceive(viewModel.$gameState.dropFirst()) { state in
-            UIViewController.updateTimerStartTime(viewModel.gameStartTime)
             if case .running = state {
                 withAnimation(.spring()) {
                     selectedCoordinates = nil
@@ -62,14 +69,12 @@ public struct GameView: View {
         }
         .task {
             guard showInstructionBadge else { return }
-            try? await Task.sleep(for: .seconds(6))
+            try? await Task.sleep(for: .seconds(8))
             withAnimation(.easeInOut(duration: 0.4)) {
                 showInstructionBadge = false
             }
         }
-        .onDisappear {
-            UIViewController.updateTimerStartTime(nil)
-        }
+        .disabled(viewModel.isLoading)
     }
     
     private var mapLayer: some View {
@@ -331,13 +336,6 @@ private struct GuessConfirmationCard: View {
         }
     }
 }
-
-@available(iOS 26.0, *)
-extension MKReverseGeocodingRequest: @retroactive @unchecked Sendable {}
-
-@available(iOS 26.0, *)
-extension MKMapItem: @retroactive @unchecked Sendable {}
-
 
 private struct PrimaryGuessButtonStyle: ButtonStyle {
     let isLoading: Bool

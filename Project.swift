@@ -85,7 +85,11 @@ let project = Project(
             deploymentTargets: .iOS("18.0"),
             infoPlist: .file(path: "GeoGuesser/Info.plist"),
             sources: ["GeoGuesser/**"],
-            resources: ["GeoGuesser/Assets.xcassets/**", "GeoGuesser/Preview Content/**"],
+            resources: [
+                "GeoGuesser/Assets.xcassets/**",
+                "GeoGuesser/Preview Content/**",
+                "GeoGuesser/**/*.icon"
+            ],
             dependencies: [
                 .target(name: "GeoDomain"),
                 .target(name: "GeoApplication"),
@@ -94,6 +98,7 @@ let project = Project(
             ],
             settings: .settings(
                 base: [
+"ASSETCATALOG_COMPILER_APPICON_NAME": "Pangea",
                     "CODE_SIGN_STYLE": "Automatic",
                     "INFOPLIST_KEY_CFBundleDisplayName": "Pinpoint",
                     "SWIFT_VERSION": "6.0",

@@ -7,7 +7,7 @@ let project = Project(
             name: "Core",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.antoniopantaleo.GeoGuesser.Core",
+            bundleId: ".GeoGuesser.Core",
             deploymentTargets: .iOS("18.0"),
             sources: ["Modules/Core/Sources/**"],
             settings: .settings(
@@ -21,7 +21,7 @@ let project = Project(
             name: "LocationServices",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.antoniopantaleo.GeoGuesser.LocationServices",
+            bundleId: ".GeoGuesser.LocationServices",
             deploymentTargets: .iOS("18.0"),
             sources: ["Modules/LocationServices/Sources/**"],
             dependencies: [
@@ -38,7 +38,7 @@ let project = Project(
             name: "GameEngine",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.antoniopantaleo.GeoGuesser.GameEngine",
+            bundleId: ".GeoGuesser.GameEngine",
             deploymentTargets: .iOS("18.0"),
             sources: ["Modules/GameEngine/Sources/**"],
             dependencies: [

@@ -37,6 +37,7 @@ extension UIViewController {
         stackView?.removeFromSuperview()
     }
     
+    /*
     static func updateTimerStartTime(_ startTime: Date?) {
         timerStartTime = startTime
         print("📝 Timer start time updated to: \(startTime?.description ?? "nil")")
@@ -125,6 +126,7 @@ extension UIViewController {
         let lookAroundControllers = findLookAroundViewControllers(in: keyWindow)
         print("🔄 Found \(lookAroundControllers.count) MKLookAroundViewController instances to refresh")
     }
+     */
 }
 
 

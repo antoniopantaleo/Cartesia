@@ -37,17 +37,35 @@ public struct StartView: View {
                 VStack(spacing: 28) {
                     HeroSection(alias: alias, regions: spotlightRegions)
                     StartButton(action: startGameAction)
-                    Button("How to play") {
-                        
-                    }
-                    .padding(.horizontal, 26)
-                    .padding(.vertical, 20)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background {
-                        RoundedRectangle(cornerRadius: 23)
-                            .stroke(style: .init())
+                    Button {
+                        print("✨",  "TODO")
+                    } label: {
+                        HStack(spacing: 12) {
+                            VStack(alignment: .leading) {
+                                Text("How to play")
+                                    .fontWeight(.semibold)
+                                Text("Learn the basics")
+                                    .font(.caption)
+                                    .foregroundStyle(.white.opacity(0.8))
+                            }
+                            Spacer()
+                            Text("?")
+                                .font(.title.weight(.semibold))
+                        }
+                        .padding(.horizontal, 26)
+                        .padding(.vertical, 20)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background {
+                                RoundedRectangle(cornerRadius: 23)
+                                    .foregroundStyle(.quinary)
+                            }
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 23)
+                                    .stroke(style: .init())
+                            }
                     }
                     .contentShape(RoundedRectangle(cornerRadius: 23))
+                    .foregroundStyle(.primary)
                     Spacer()
                     PlayerFooter(alias: alias)
                 }

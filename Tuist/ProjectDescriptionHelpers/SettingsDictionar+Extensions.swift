@@ -8,6 +8,16 @@
 import ProjectDescription
 
 public extension SettingsDictionary {
+    
+    static let developmentTeam: Self = [
+        "CODE_SIGN_STYLE": "Automatic",
+        "DEVELOPMENT_TEAM": .string(
+            Environment.developmentTeam.getString(
+                default: ""
+            )
+        )
+    ]
+    
     static let approachableConcurrency: Self = [
         "SWIFT_VERSION": "6.0",
         "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor",

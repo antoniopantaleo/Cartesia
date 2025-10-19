@@ -1,17 +1,19 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 
+let appName = "Pangea"
 let marketingVersion = "1.0.0-alpha"
 let buildNumber = "1"
+let bundlePrefix = Environment.bundlePrefix.getString(default: "")
 
 let project = Project(
-    name: "Pangea",
+    name: appName,
     targets: [
         .target(
             name: "Domain",
             destinations: .iOS,
             product: .framework,
-            bundleId: ".Pangea.Domain",
+            bundleId: "\(bundlePrefix).\(appName).Domain",
             deploymentTargets: .iOS("18.0"),
             sources: ["Modules/Domain/Sources/**"],
             settings: .settings(
@@ -24,7 +26,7 @@ let project = Project(
             name: "Application",
             destinations: .iOS,
             product: .framework,
-            bundleId: ".Pangea.Application",
+            bundleId: "\(bundlePrefix).\(appName).Application",
             deploymentTargets: .iOS("18.0"),
             sources: ["Modules/Application/Sources/**"],
             dependencies: [
@@ -40,7 +42,7 @@ let project = Project(
             name: "Infrastructure",
             destinations: .iOS,
             product: .framework,
-            bundleId: ".Pangea.Infrastructure",
+            bundleId: "\(bundlePrefix).\(appName).Infrastracture",
             deploymentTargets: .iOS("18.0"),
             sources: ["Modules/Infrastructure/Sources/**"],
             dependencies: [
@@ -56,7 +58,7 @@ let project = Project(
             name: "Presentation",
             destinations: .iOS,
             product: .framework,
-            bundleId: ".Pangea.Presentation",
+            bundleId: "\(bundlePrefix).\(appName).Presentation",
             deploymentTargets: .iOS("18.0"),
             sources: ["Modules/Presentation/Sources/**"],
             resources: ["Modules/Presentation/Resources/**"],
@@ -70,17 +72,17 @@ let project = Project(
             )
         ),
         .target(
-            name: "Pangea",
+            name: appName,
             destinations: .iOS,
             product: .app,
-            bundleId: ".Pangea",
+            bundleId: "\(bundlePrefix).\(appName).Domain",
             deploymentTargets: .iOS("18.0"),
-            infoPlist: .file(path: "Pangea/Info.plist"),
-            sources: ["Pangea/**"],
+            infoPlist: .file(path: "\(appName)/Info.plist"),
+            sources: ["\(appName)/**"],
             resources: [
-                "Pangea/Assets.xcassets/**",
-                "Pangea/Preview Content/**",
-                "Pangea/**/*.icon"
+                "\(appName)/Assets.xcassets/**",
+                "\(appName)/Preview Content/**",
+                "\(appName)/**/*.icon"
             ],
             dependencies: [
                 .target(name: "Domain"),
@@ -98,10 +100,10 @@ let project = Project(
                             buildNumber: buildNumber
                         )
                     )
+                    .merging(.developmentTeam)
                     .merging(
-                        ["ASSETCATALOG_COMPILER_APPICON_NAME": "Pangea",
-                         "CODE_SIGN_STYLE": "Automatic",
-                         "INFOPLIST_KEY_CFBundleDisplayName": "Pangea",
+                        ["ASSETCATALOG_COMPILER_APPICON_NAME": .string(appName),
+                         "INFOPLIST_KEY_CFBundleDisplayName": .string(appName),
                          "TARGETED_DEVICE_FAMILY": "1",
                          "SUPPORTS_MACCATALYST": "NO",
                          "SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD": "NO",
@@ -112,11 +114,9 @@ let project = Project(
                          "INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad": "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight",
                          "INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone": "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight",
                          "ENABLE_PREVIEWS": "YES",
-                         "DEVELOPMENT_ASSET_PATHS": "\"Pangea/Preview Content\""
+                         "DEVELOPMENT_ASSET_PATHS": "\"\(appName)/Preview Content\""
                         ])
-                
             )
         )
     ]
 )
-

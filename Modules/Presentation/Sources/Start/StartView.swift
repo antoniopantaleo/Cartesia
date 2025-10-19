@@ -35,7 +35,10 @@ public struct StartView: View {
                 AnimatedGradientBackground(isAnimating: $isAnimating)
                 
                 VStack(spacing: 28) {
-                    HeroSection(alias: alias, regions: spotlightRegions)
+                    HeroSection(
+                        alias: alias,
+                        regions: spotlightRegions
+                    )
                     StartButton(action: startGameAction)
                     Button {
                         print("✨",  "TODO")

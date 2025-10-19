@@ -15,7 +15,6 @@ private var timerWindow: UIWindow?
 
 extension UIViewController {
     public static func swizzleViewWillAppear() {
-        // Swizzle viewWillAppear
         guard
             let originalWillAppear = class_getInstanceMethod(
                 UIViewController.self,
@@ -31,15 +30,9 @@ extension UIViewController {
     
     @objc
     private func swizzled_viewWillAppear(_ animated: Bool) {
-        // Call original implementation (now points to the swizzled method)
         swizzled_viewWillAppear(animated)
-        
         let typeOfSelf = String(describing: type(of: self))
         guard typeOfSelf.contains("MKLookAroundViewController") else { return }
-        
-        print("🎯 MKLookAroundViewController viewWillAppear detected")
-        
-        // Remove info stack view
         let stackView = self.value(forKey: "_infoStackView") as? UIView
         stackView?.removeFromSuperview()
     }

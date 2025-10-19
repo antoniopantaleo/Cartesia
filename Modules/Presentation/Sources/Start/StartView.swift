@@ -375,25 +375,3 @@ private struct PrimaryCTAButtonStyle: ButtonStyle {
     StartView { }
         .preferredColorScheme(.dark)
 }
-
-#Preview("Hero Map", traits: .sizeThatFitsLayout) {
-    HeroMapPreview(regions: [
-        MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 48.8566, longitude: 2.3522),
-            span: MKCoordinateSpan(latitudeDelta: 25, longitudeDelta: 25)
-        ),
-        MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: -33.8688, longitude: 151.2093),
-            span: MKCoordinateSpan(latitudeDelta: 25, longitudeDelta: 25)
-        ),
-        MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060),
-            span: MKCoordinateSpan(latitudeDelta: 20, longitudeDelta: 20)
-        ),
-        MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 35.6762, longitude: 139.6503),
-            span: MKCoordinateSpan(latitudeDelta: 18, longitudeDelta: 18)
-        )
-    ])
-    .frame(width: 300, height: 300)
-}

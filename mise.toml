@@ -1,8 +1,8 @@
 [tools]
-git-cliff = "2.8.0"
+tuist = "4.88.0"
+git-cliff = "2.10.1"
 typos = "1.32.0"
 node = "24.0.2"
-swiftlint = "0.59.1"
 
 [hooks]
 postinstall = '''
@@ -19,8 +19,7 @@ EOF
 
 chmod +x .git/hooks/prepare-commit-msg
 
-[ -z $(cat .gitignore | grep node_modules) ] && echo "node_modules" >> .gitignore
-[ -z $(cat .gitignore | grep package-lock.json) ] && echo "package-lock.json" >> .gitignore
-[ -z $(cat .gitignore | grep package.json) ] && echo "package.json" >> .gitignore
-[ -z $(cat .gitignore | grep commitlint.config.mjs) ] && echo "commitlint.config.mjs" >> .gitignore
+for p in node_modules package-lock.json package.json commitlint.config.mjs; do
+  grep -qxF "$p" .gitignore 2>/dev/null || printf '%s\n' "$p" >> .gitignore
+done
 '''

@@ -16,6 +16,11 @@ let project = Project(
                     "SWIFT_STRICT_CONCURRENCY": "complete",
                     "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor",
                     "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
+                    "ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS": "YES",
+                    "ENABLE_USER_SCRIPT_SANDBOXING": "YES",
+                    "STRING_CATALOG_GENERATE_SYMBOLS": "YES",
+                    "ENABLE_MODULE_VERIFIER": "YES",
+                    "MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS": "gnu11 gnu++14",
                 ]
             )
         ),
@@ -35,6 +40,11 @@ let project = Project(
                     "SWIFT_STRICT_CONCURRENCY": "complete",
                     "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor",
                     "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
+                    "ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS": "YES",
+                    "ENABLE_USER_SCRIPT_SANDBOXING": "YES",
+                    "STRING_CATALOG_GENERATE_SYMBOLS": "YES",
+                    "ENABLE_MODULE_VERIFIER": "YES",
+                    "MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS": "gnu11 gnu++14",
                 ]
             )
         ),
@@ -54,6 +64,11 @@ let project = Project(
                     "SWIFT_STRICT_CONCURRENCY": "complete",
                     "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor",
                     "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
+                    "ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS": "YES",
+                    "ENABLE_USER_SCRIPT_SANDBOXING": "YES",
+                    "STRING_CATALOG_GENERATE_SYMBOLS": "YES",
+                    "ENABLE_MODULE_VERIFIER": "YES",
+                    "MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS": "gnu11 gnu++14",
                 ]
             )
         ),
@@ -74,6 +89,11 @@ let project = Project(
                     "SWIFT_STRICT_CONCURRENCY": "complete",
                     "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor",
                     "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
+                    "ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS": "YES",
+                    "ENABLE_USER_SCRIPT_SANDBOXING": "YES",
+                    "STRING_CATALOG_GENERATE_SYMBOLS": "YES",
+                    "ENABLE_MODULE_VERIFIER": "YES",
+                    "MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS": "gnu11 gnu++14",
                 ]
             )
         ),
@@ -99,6 +119,13 @@ let project = Project(
             settings: .settings(
                 base: [
 "ASSETCATALOG_COMPILER_APPICON_NAME": "Pangea",
+                    "ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS": "YES",
+                    "ENABLE_USER_SCRIPT_SANDBOXING": "YES",
+                    "STRING_CATALOG_GENERATE_SYMBOLS": "YES",
+                    "ENABLE_MODULE_VERIFIER": "YES",
+                    "MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS": "gnu11 gnu++14",
+                    "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor",
+                    "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
                     "CODE_SIGN_STYLE": "Automatic",
                     "INFOPLIST_KEY_CFBundleDisplayName": "Pinpoint",
                     "SWIFT_VERSION": "6.0",

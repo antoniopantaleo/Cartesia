@@ -119,6 +119,7 @@ let project = Project(
                     .merging(
                         ["ASSETCATALOG_COMPILER_APPICON_NAME": .string(appName),
                          "INFOPLIST_KEY_CFBundleDisplayName": .string(appName),
+                         "ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS": "YES",
                          "TARGETED_DEVICE_FAMILY": "1",
                          "ENABLE_PREVIEWS": "YES",
                          "DEVELOPMENT_ASSET_PATHS": "\"\(appName)/Preview Content\""

@@ -1,4 +1,5 @@
 import ProjectDescription
+import ProjectDescriptionHelpers
 
 let marketingVersion = "1.0.0-alpha"
 let buildNumber = "1"
@@ -14,17 +15,9 @@ let project = Project(
             deploymentTargets: .iOS("18.0"),
             sources: ["Modules/Domain/Sources/**"],
             settings: .settings(
-                base: [
-                    "SWIFT_VERSION": "6.0",
-                    "SWIFT_STRICT_CONCURRENCY": "complete",
-                    "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor",
-                    "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
-                    "ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS": "YES",
-                    "ENABLE_USER_SCRIPT_SANDBOXING": "YES",
-                    "STRING_CATALOG_GENERATE_SYMBOLS": "YES",
-                    "ENABLE_MODULE_VERIFIER": "YES",
-                    "MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS": "gnu11 gnu++14",
-                ]
+                base: SettingsDictionary()
+                    .merging(.xcodeRecommendedSettings)
+                    .merging(.approachableConcurrency)
             )
         ),
         .target(
@@ -38,17 +31,9 @@ let project = Project(
                 .target(name: "GeoDomain")
             ],
             settings: .settings(
-                base: [
-                    "SWIFT_VERSION": "6.0",
-                    "SWIFT_STRICT_CONCURRENCY": "complete",
-                    "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor",
-                    "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
-                    "ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS": "YES",
-                    "ENABLE_USER_SCRIPT_SANDBOXING": "YES",
-                    "STRING_CATALOG_GENERATE_SYMBOLS": "YES",
-                    "ENABLE_MODULE_VERIFIER": "YES",
-                    "MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS": "gnu11 gnu++14",
-                ]
+                base: SettingsDictionary()
+                    .merging(.xcodeRecommendedSettings)
+                    .merging(.approachableConcurrency)
             )
         ),
         .target(
@@ -62,17 +47,9 @@ let project = Project(
                 .target(name: "GeoDomain")
             ],
             settings: .settings(
-                base: [
-                    "SWIFT_VERSION": "6.0",
-                    "SWIFT_STRICT_CONCURRENCY": "complete",
-                    "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor",
-                    "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
-                    "ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS": "YES",
-                    "ENABLE_USER_SCRIPT_SANDBOXING": "YES",
-                    "STRING_CATALOG_GENERATE_SYMBOLS": "YES",
-                    "ENABLE_MODULE_VERIFIER": "YES",
-                    "MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS": "gnu11 gnu++14",
-                ]
+                base: SettingsDictionary()
+                    .merging(.xcodeRecommendedSettings)
+                    .merging(.approachableConcurrency)
             )
         ),
         .target(
@@ -87,17 +64,9 @@ let project = Project(
                 .target(name: "GeoDomain")
             ],
             settings: .settings(
-                base: [
-                    "SWIFT_VERSION": "6.0",
-                    "SWIFT_STRICT_CONCURRENCY": "complete",
-                    "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor",
-                    "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
-                    "ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS": "YES",
-                    "ENABLE_USER_SCRIPT_SANDBOXING": "YES",
-                    "STRING_CATALOG_GENERATE_SYMBOLS": "YES",
-                    "ENABLE_MODULE_VERIFIER": "YES",
-                    "MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS": "gnu11 gnu++14",
-                ]
+                base: SettingsDictionary()
+                    .merging(.xcodeRecommendedSettings)
+                    .merging(.approachableConcurrency)
             )
         ),
         .target(
@@ -120,33 +89,34 @@ let project = Project(
                 .target(name: "GeoPresentation")
             ],
             settings: .settings(
-                base: [                    "MARKETING_VERSION": .string(marketingVersion),
-                    "CURRENT_PROJECT_VERSION": .string(buildNumber),
-"ASSETCATALOG_COMPILER_APPICON_NAME": "Pangea",
-                    "ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS": "YES",
-                    "ENABLE_USER_SCRIPT_SANDBOXING": "YES",
-                    "STRING_CATALOG_GENERATE_SYMBOLS": "YES",
-                    "ENABLE_MODULE_VERIFIER": "YES",
-                    "MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS": "gnu11 gnu++14",
-                    "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor",
-                    "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
-                    "CODE_SIGN_STYLE": "Automatic",
-                    "INFOPLIST_KEY_CFBundleDisplayName": "Pinpoint",
-                    "SWIFT_VERSION": "6.0",
-                    "SWIFT_STRICT_CONCURRENCY": "complete",
-                    "TARGETED_DEVICE_FAMILY": "1",
-                    "SUPPORTS_MACCATALYST": "NO",
-                    "SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD": "NO",
-                    "SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD": "NO",
-                    "INFOPLIST_KEY_UIApplicationSceneManifest_Generation": "YES",
-                    "INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents": "YES",
-                    "INFOPLIST_KEY_UILaunchScreen_Generation": "YES",
-                    "INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad": "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight",
-                    "INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone": "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight",
-                    "ENABLE_PREVIEWS": "YES",
-                    "DEVELOPMENT_ASSET_PATHS": "\"GeoGuesser/Preview Content\""
-                ]
+                base: SettingsDictionary()
+                    .merging(.xcodeRecommendedSettings)
+                    .merging(.approachableConcurrency)
+                    .merging(
+                        .version(
+                            semVer: marketingVersion,
+                            buildNumber: buildNumber
+                        )
+                    )
+                    .merging(
+                        ["ASSETCATALOG_COMPILER_APPICON_NAME": "Pangea",
+                         "CODE_SIGN_STYLE": "Automatic",
+                         "INFOPLIST_KEY_CFBundleDisplayName": "Pinpoint",
+                         "TARGETED_DEVICE_FAMILY": "1",
+                         "SUPPORTS_MACCATALYST": "NO",
+                         "SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD": "NO",
+                         "SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD": "NO",
+                         "INFOPLIST_KEY_UIApplicationSceneManifest_Generation": "YES",
+                         "INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents": "YES",
+                         "INFOPLIST_KEY_UILaunchScreen_Generation": "YES",
+                         "INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad": "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight",
+                         "INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone": "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight",
+                         "ENABLE_PREVIEWS": "YES",
+                         "DEVELOPMENT_ASSET_PATHS": "\"GeoGuesser/Preview Content\""
+                        ])
+                
             )
         )
     ]
 )
+

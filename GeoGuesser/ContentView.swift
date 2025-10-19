@@ -6,13 +6,7 @@
 //
 
 import SwiftUI
-import MapKit
-import Combine
-import UIKit
-import Core
-import GameEngine
-import LocationServices
-import StartScreen
+import GeoPresentation
 
 struct ContentView: View {
     @EnvironmentObject var appState: AppState
@@ -25,12 +19,17 @@ struct ContentView: View {
             }
         case .game:
             if let viewModel = appState.gameViewModel {
-                GameView(viewModel: viewModel)
-                    .environmentObject(appState)
+                GameView(
+                    viewModel: viewModel,
+                    onResult: { appState.showGameResult($0) }
+                )
             }
         case .result(let result):
-            GameResultView(result: result)
-                .environmentObject(appState)
+            GameResultView(
+                result: result,
+                onPlayAgain: appState.startNewGame,
+                onBackToStart: appState.endGame
+            )
         }
     }
 }

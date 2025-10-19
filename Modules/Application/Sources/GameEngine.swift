@@ -1,5 +1,5 @@
 import Foundation
-import Core
+import GeoDomain
 import Observation
 
 @Observable

@@ -7,8 +7,7 @@
 
 @preconcurrency import MapKit
 import SwiftUI
-import Core
-import LocationServices
+import GeoDomain
 
 extension MKLookAroundScene: @retroactive @unchecked Sendable {}
 
@@ -83,9 +82,9 @@ struct LookAroundView: UIViewControllerRepresentable {
     .frame(width: 400, height: 400)
     .clipShape(RoundedRectangle(cornerRadius: 20))
     .task {
-        let service = LocationService()
-        let coordinates = await service.generateRandomLocation()
-        let request = MKLookAroundSceneRequest(coordinate: CLLocationCoordinate2D(
+        let coordinates = Coordinates(latitude: 48.8584, longitude: 2.2945)
+        let request = MKLookAroundSceneRequest(
+            coordinate: CLLocationCoordinate2D(
                 latitude: coordinates.latitude,
                 longitude: coordinates.longitude
             )

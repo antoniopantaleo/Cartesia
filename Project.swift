@@ -4,12 +4,12 @@ let project = Project(
     name: "GeoGuesser",
     targets: [
         .target(
-            name: "Core",
+            name: "GeoDomain",
             destinations: .iOS,
             product: .framework,
             bundleId: ".GeoGuesser.Core",
             deploymentTargets: .iOS("18.0"),
-            sources: ["Modules/Core/Sources/**"],
+            sources: ["Modules/Domain/Sources/**"],
             settings: .settings(
                 base: [
                     "SWIFT_VERSION": "6.0",
@@ -18,14 +18,14 @@ let project = Project(
             )
         ),
         .target(
-            name: "LocationServices",
+            name: "GeoApplication",
             destinations: .iOS,
             product: .framework,
             bundleId: ".GeoGuesser.LocationServices",
             deploymentTargets: .iOS("18.0"),
-            sources: ["Modules/LocationServices/Sources/**"],
+            sources: ["Modules/Application/Sources/**"],
             dependencies: [
-                .target(name: "Core")
+                .target(name: "GeoDomain")
             ],
             settings: .settings(
                 base: [
@@ -35,14 +35,15 @@ let project = Project(
             )
         ),
         .target(
-            name: "StartScreen",
+            name: "GeoInfrastructure",
             destinations: .iOS,
             product: .framework,
             bundleId: ".GeoGuesser.StartScreen",
             deploymentTargets: .iOS("18.0"),
-            sources: ["Modules/StartScreen/Sources/**"],
-            resources: ["Modules/StartScreen/Resources/**"],
-            dependencies: [],
+            sources: ["Modules/Infrastructure/Sources/**"],
+            dependencies: [
+                .target(name: "GeoDomain")
+            ],
             settings: .settings(
                 base: [
                     "SWIFT_VERSION": "6.0",
@@ -51,14 +52,15 @@ let project = Project(
             )
         ),
         .target(
-            name: "GameEngine",
+            name: "GeoPresentation",
             destinations: .iOS,
             product: .framework,
             bundleId: ".GeoGuesser.GameEngine",
             deploymentTargets: .iOS("18.0"),
-            sources: ["Modules/GameEngine/Sources/**"],
+            sources: ["Modules/Presentation/Sources/**"],
+            resources: ["Modules/Presentation/Resources/**"],
             dependencies: [
-                .target(name: "Core")
+                .target(name: "GeoDomain")
             ],
             settings: .settings(
                 base: [
@@ -77,10 +79,10 @@ let project = Project(
             sources: ["GeoGuesser/**"],
             resources: ["GeoGuesser/Assets.xcassets/**", "GeoGuesser/Preview Content/**"],
             dependencies: [
-                .target(name: "Core"),
-                .target(name: "GameEngine"),
-                .target(name: "LocationServices"),
-                .target(name: "StartScreen")
+                .target(name: "GeoDomain"),
+                .target(name: "GeoApplication"),
+                .target(name: "GeoInfrastructure"),
+                .target(name: "GeoPresentation")
             ],
             settings: .settings(
                 base: [

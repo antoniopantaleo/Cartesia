@@ -1,6 +1,6 @@
 import Foundation
 @preconcurrency import MapKit
-import Core
+import GeoDomain
 
 @MainActor
 public final class LookAroundService: LookAroundServiceProtocol {
@@ -9,7 +9,10 @@ public final class LookAroundService: LookAroundServiceProtocol {
     
     public func getScene(for coordinates: Coordinates) async throws -> Any? {
         let request = MKLookAroundSceneRequest(
-            coordinate: CLLocationCoordinate2D(coordinates: coordinates)
+            coordinate: CLLocationCoordinate2D(
+                latitude: coordinates.latitude,
+                longitude: coordinates.longitude
+            )
         )
         return try await request.scene
     }

@@ -6,11 +6,12 @@
 //
 
 import SwiftUI
-import Core
+import GeoDomain
 
-struct GameResultView: View {
-    let result: GameResult
-    @EnvironmentObject var appState: AppState
+public struct GameResultView: View {
+    public let result: GameResult
+    private let onPlayAgain: () -> Void
+    private let onBackToStart: () -> Void
     @State private var animateSummary = false
     
     private var score: Int {
@@ -27,7 +28,17 @@ struct GameResultView: View {
         return ratio * 100
     }
     
-    var body: some View {
+    public init(
+        result: GameResult,
+        onPlayAgain: @escaping () -> Void,
+        onBackToStart: @escaping () -> Void
+    ) {
+        self.result = result
+        self.onPlayAgain = onPlayAgain
+        self.onBackToStart = onBackToStart
+    }
+    
+    public var body: some View {
         ZStack {
             ResultBackground()
             
@@ -43,11 +54,10 @@ struct GameResultView: View {
                     
                     ResultMapView(result: result)
                     
-                    ActionButtonsView {
-                        appState.startNewGame()
-                    } onBackToStart: {
-                        appState.endGame()
-                    }
+                    ActionButtonsView(
+                        onPlayAgain: onPlayAgain,
+                        onBackToStart: onBackToStart
+                    )
                 }
                 .padding(.horizontal, 24)
                 .padding(.vertical, 36)
@@ -94,8 +104,9 @@ private struct ResultBackground: View {
             guessedLocation: Coordinates(latitude: 48.863, longitude: 2.349),
             timeTaken: 87,
             formattedTime: "01:27"
-        )
+        ),
+        onPlayAgain: {},
+        onBackToStart: {}
     )
-    .environmentObject(AppState())
     .preferredColorScheme(.dark)
 }

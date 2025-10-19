@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import Core
+import GeoDomain
 import MapKit
 
 struct ResultMapView: View {
@@ -19,7 +19,9 @@ struct ResultMapView: View {
         let coordinates = [
             result.guessedLocation,
             result.actualLocation
-        ].map { CLLocationCoordinate2D(coordinates: $0) }
+        ].map {
+            CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+        }
         
         let minLat = coordinates.map(\.latitude).min() ?? result.actualLocation.latitude
         let maxLat = coordinates.map(\.latitude).max() ?? result.actualLocation.latitude
@@ -49,7 +51,10 @@ struct ResultMapView: View {
             Map(position: $camera) {
                 Annotation(
                     "Your guess",
-                    coordinate: CLLocationCoordinate2D(coordinates: result.guessedLocation),
+                    coordinate: CLLocationCoordinate2D(
+                        latitude: result.guessedLocation.latitude,
+                        longitude: result.guessedLocation.longitude
+                    ),
                     anchor: .bottom
                 ) {
                     DropPinMarker()
@@ -58,7 +63,10 @@ struct ResultMapView: View {
                 
                 Annotation(
                     "Actual location",
-                    coordinate: CLLocationCoordinate2D(coordinates: result.actualLocation),
+                    coordinate: CLLocationCoordinate2D(
+                        latitude: result.actualLocation.latitude,
+                        longitude: result.actualLocation.longitude
+                    ),
                     anchor: .bottom
                 ) {
                     ActualLocationMarker()
@@ -67,7 +75,9 @@ struct ResultMapView: View {
                 
                 MapPolyline(
                     coordinates: [result.guessedLocation, result.actualLocation]
-                        .map(CLLocationCoordinate2D.init(coordinates:)),
+                        .map {
+                            CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+                        },
                     contourStyle: .straight
                 )
                 .stroke(

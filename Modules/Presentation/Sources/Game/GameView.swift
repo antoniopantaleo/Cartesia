@@ -7,26 +7,29 @@
 
 import SwiftUI
 import Combine
-import Core
-import GameEngine
-import LocationServices
+import GeoDomain
 import MapKit
+import UIKit
 
-struct GameView: View {
-    @ObservedObject var viewModel: GameViewModel
-    @EnvironmentObject var appState: AppState
+public struct GameView: View {
+    @ObservedObject private var viewModel: GameViewModel
+    private let onResult: (GameResult) -> Void
     @State private var selectedCoordinates: Coordinates?
     @State private var cameraPosition: MapCameraPosition
     @State private var lookAroundExpanded = false
     @State private var isSubmittingGuess = false
     @State private var showInstructionBadge = true
     
-    init(viewModel: GameViewModel) {
+    public init(
+        viewModel: GameViewModel,
+        onResult: @escaping (GameResult) -> Void
+    ) {
         self.viewModel = viewModel
+        self.onResult = onResult
         _cameraPosition = State(initialValue: .region(viewModel.cameraRegion))
     }
     
-    var body: some View {
+    public var body: some View {
         ZStack {
             mapLayer
         }
@@ -36,15 +39,20 @@ struct GameView: View {
             bottomControls
         }
         .overlay(alignment: .top) {
-            if showInstructionBadge, selectedCoordinates == nil {
-                InstructionBadge()
-                    .transition(.asymmetric(insertion: .opacity.combined(with: .scale), removal: .opacity))
+            VStack(spacing: 12) {
+                topControls
+                if showInstructionBadge, selectedCoordinates == nil {
+                    InstructionBadge()
+                        .transition(.asymmetric(insertion: .opacity.combined(with: .scale), removal: .opacity))
+                }
             }
+            .padding(.top, 12)
         }
         .onReceive(viewModel.$cameraRegion.dropFirst()) { region in
             cameraPosition = .region(region)
         }
         .onReceive(viewModel.$gameState.dropFirst()) { state in
+            UIViewController.updateTimerStartTime(viewModel.gameStartTime)
             if case .running = state {
                 withAnimation(.spring()) {
                     selectedCoordinates = nil
@@ -61,6 +69,9 @@ struct GameView: View {
                 }
             }
         }
+        .onDisappear {
+            UIViewController.updateTimerStartTime(nil)
+        }
     }
     
     private var mapLayer: some View {
@@ -69,7 +80,10 @@ struct GameView: View {
                 if let selected = selectedCoordinates {
                     Annotation(
                         "Your guess",
-                        coordinate: CLLocationCoordinate2D(coordinates: selected),
+                        coordinate: CLLocationCoordinate2D(
+                            latitude: selected.latitude,
+                            longitude: selected.longitude
+                        ),
                         anchor: .bottom
                     ) {
                         DropPinMarker()
@@ -115,7 +129,6 @@ struct GameView: View {
             .buttonStyle(.plain)
         }
         .padding(.horizontal, 20)
-        .padding(.top, 12)
     }
     
     private var confBinging: Binding<Bool> {
@@ -171,7 +184,7 @@ struct GameView: View {
             await viewModel.confirmPosition(guess)
             isSubmittingGuess = false
             if case .completed(let result) = viewModel.gameState {
-                appState.showGameResult(result)
+                onResult(result)
             }
         }
     }
@@ -422,9 +435,47 @@ private struct LookAroundPanel: View {
 #Preview {
     GameView(
         viewModel: GameViewModel(
-            gameEngine: GameEngine(locationService: LocationService()),
-            lookAroundService: LookAroundService()
-        )
+            gameEngine: PreviewGameEngine(),
+            lookAroundService: PreviewLookAroundService()
+        ),
+        onResult: { _ in }
     )
-    .environmentObject(AppState())
+    .preferredColorScheme(.dark)
+}
+
+// MARK: - Preview Helpers
+
+@MainActor
+private final class PreviewGameEngine: GameEngineProtocol {
+    var gameState: GameState = .running(startTime: .now)
+    var currentLocation: Coordinates? = .init(latitude: 48.8584, longitude: 2.2945)
+    
+    func startNewGame() async {
+        currentLocation = .init(latitude: 48.8584, longitude: 2.2945)
+        gameState = .running(startTime: .now)
+    }
+    
+    func submitGuess(_ coordinates: Coordinates) async {
+        let result = GameResult(
+            distance: 1_200,
+            formattedDistance: "1.2 km",
+            actualLocation: currentLocation ?? Coordinates(latitude: 48.8584, longitude: 2.2945),
+            guessedLocation: coordinates,
+            timeTaken: 87,
+            formattedTime: "01:27"
+        )
+        gameState = .completed(result: result)
+    }
+    
+    func resetGame() {
+        gameState = .notStarted
+        currentLocation = nil
+    }
+}
+
+@MainActor
+private final class PreviewLookAroundService: LookAroundServiceProtocol {
+    func getScene(for coordinates: Coordinates) async throws -> Any? {
+        nil
+    }
 }

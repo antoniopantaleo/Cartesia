@@ -1,6 +1,6 @@
 import Foundation
 import CoreLocation
-import Core
+import GeoDomain
 
 @MainActor
 public final class LocationService: LocationServiceProtocol {
@@ -25,14 +25,5 @@ public final class LocationService: LocationServiceProtocol {
     public func formatDistance(_ distance: Double) -> String {
         let measurement = Measurement(value: distance, unit: UnitLength.meters)
         return measurement.formatted()
-    }
-}
-
-public extension CLLocationCoordinate2D {
-    init(coordinates: Coordinates) {
-        self = CLLocationCoordinate2D(
-            latitude: coordinates.latitude, 
-            longitude: coordinates.longitude
-        )
     }
 }

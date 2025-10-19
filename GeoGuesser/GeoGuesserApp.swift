@@ -6,10 +6,11 @@
 //
 
 import SwiftUI
-import Core
-import GameEngine
-import LocationServices
-import StartScreen
+import UIKit
+import GeoDomain
+import GeoApplication
+import GeoInfrastructure
+import GeoPresentation
 
 @main
 struct GeoGuesserApp: App {
@@ -28,13 +29,18 @@ class AppState: ObservableObject {
     @Published var currentScreen: AppScreen = .start
     @Published var gameViewModel: GameViewModel?
     
-    private let locationService = LocationService()
-    private let gameEngine: GameEngine
-    private let lookAroundService = LookAroundService()
+    private let locationService: LocationServiceProtocol
+    private let gameEngine: GameEngineProtocol
+    private let lookAroundService: LookAroundServiceProtocol
     
-    init() {
-        UIViewController.swizzleViewWillAppear()
+    init(
+        locationService: LocationServiceProtocol = LocationService(),
+        lookAroundService: LookAroundServiceProtocol = LookAroundService()
+    ) {
+        self.locationService = locationService
+        self.lookAroundService = lookAroundService
         self.gameEngine = GameEngine(locationService: locationService)
+        UIViewController.swizzleViewWillAppear()
     }
     
     func startNewGame() {

@@ -7,32 +7,30 @@
 
 import Foundation
 @preconcurrency import MapKit
-import Core
-import GameEngine
-import LocationServices
+import GeoDomain
 
 @MainActor
-final class GameViewModel: ObservableObject {
-    @Published private(set) var cameraRegion: MKCoordinateRegion = .init(.world)
-    @Published var scene: MKLookAroundScene?
-    @Published private(set) var gameState: GameState = .notStarted
-    @Published private(set) var currentLocation: Coordinates?
-    @Published private(set) var isLoadingScene = false
+public final class GameViewModel: ObservableObject {
+    @Published public private(set) var cameraRegion: MKCoordinateRegion = .init(.world)
+    @Published public var scene: MKLookAroundScene?
+    @Published public private(set) var gameState: GameState = .notStarted
+    @Published public private(set) var currentLocation: Coordinates?
+    @Published public private(set) var isLoadingScene = false
 
     private let gameEngine: GameEngineProtocol
     private let lookAroundService: LookAroundServiceProtocol
 
-    var isGameRunning: Bool {
+    public var isGameRunning: Bool {
         if case .running = gameState { return true }
         return false
     }
 
-    var gameStartTime: Date? {
+    public var gameStartTime: Date? {
         if case .running(let startTime) = gameState { return startTime }
         return nil
     }
 
-    init(
+    public init(
         gameEngine: GameEngineProtocol,
         lookAroundService: LookAroundServiceProtocol
     ) {
@@ -44,7 +42,7 @@ final class GameViewModel: ObservableObject {
         }
     }
 
-    func startNewGame() async {
+    public func startNewGame() async {
         await gameEngine.startNewGame()
         await MainActor.run {
             gameState = gameEngine.gameState
@@ -75,7 +73,7 @@ final class GameViewModel: ObservableObject {
         await MainActor.run { isLoadingScene = false }
     }
 
-    func confirmPosition(_ coordinates: Coordinates) async {
+    public func confirmPosition(_ coordinates: Coordinates) async {
         await gameEngine.submitGuess(coordinates)
         await MainActor.run {
             gameState = gameEngine.gameState
@@ -83,18 +81,23 @@ final class GameViewModel: ObservableObject {
         }
     }
 
-    func focusCameraOnCurrentLocation() {
+    public func focusCameraOnCurrentLocation() {
         guard let location = currentLocation else { return }
         let span = MKCoordinateSpan(latitudeDelta: 30, longitudeDelta: 30)
-        let coordinate = CLLocationCoordinate2D(coordinates: location)
+        let coordinate = CLLocationCoordinate2D(
+            latitude: location.latitude,
+            longitude: location.longitude
+        )
         cameraRegion = MKCoordinateRegion(center: coordinate, span: span)
     }
 
-    func updateCamera(selectedLocation: Coordinates) {
+    public func updateCamera(selectedLocation: Coordinates) {
         guard let actualLocation = currentLocation else { return }
 
         let coordinates = [selectedLocation, actualLocation]
-            .map { CLLocationCoordinate2D(coordinates: $0) }
+            .map {
+                CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+            }
 
         let minLat = coordinates.map(\.latitude).min() ?? actualLocation.latitude
         let maxLat = coordinates.map(\.latitude).max() ?? actualLocation.latitude

@@ -14,7 +14,7 @@ import SwiftUI
 @MainActor private var timerWindow: UIWindow?
 
 extension UIViewController {
-    static func swizzleViewWillAppear() {
+    public static func swizzleViewWillAppear() {
         // Swizzle viewWillAppear
         guard
             let originalWillAppear = class_getInstanceMethod(

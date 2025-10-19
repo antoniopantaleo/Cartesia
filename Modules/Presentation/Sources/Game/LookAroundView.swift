@@ -7,7 +7,7 @@
 
 @preconcurrency import MapKit
 import SwiftUI
-import GeoDomain
+import Domain
 
 struct LookAroundView: UIViewControllerRepresentable {
     @Binding var scene: MKLookAroundScene?

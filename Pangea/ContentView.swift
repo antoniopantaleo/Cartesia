@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import GeoPresentation
+import Presentation
 
 struct ContentView: View {
     @EnvironmentObject var appState: AppState

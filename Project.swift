@@ -5,13 +5,13 @@ let marketingVersion = "1.0.0-alpha"
 let buildNumber = "1"
 
 let project = Project(
-    name: "GeoGuesser",
+    name: "Pangea",
     targets: [
         .target(
-            name: "GeoDomain",
+            name: "Domain",
             destinations: .iOS,
             product: .framework,
-            bundleId: ".GeoGuesser.Core",
+            bundleId: ".Pangea.Domain",
             deploymentTargets: .iOS("18.0"),
             sources: ["Modules/Domain/Sources/**"],
             settings: .settings(
@@ -21,14 +21,14 @@ let project = Project(
             )
         ),
         .target(
-            name: "GeoApplication",
+            name: "Application",
             destinations: .iOS,
             product: .framework,
-            bundleId: ".GeoGuesser.LocationServices",
+            bundleId: ".Pangea.Application",
             deploymentTargets: .iOS("18.0"),
             sources: ["Modules/Application/Sources/**"],
             dependencies: [
-                .target(name: "GeoDomain")
+                .target(name: "Domain")
             ],
             settings: .settings(
                 base: SettingsDictionary()
@@ -37,14 +37,14 @@ let project = Project(
             )
         ),
         .target(
-            name: "GeoInfrastructure",
+            name: "Infrastructure",
             destinations: .iOS,
             product: .framework,
-            bundleId: ".GeoGuesser.StartScreen",
+            bundleId: ".Pangea.Infrastructure",
             deploymentTargets: .iOS("18.0"),
             sources: ["Modules/Infrastructure/Sources/**"],
             dependencies: [
-                .target(name: "GeoDomain")
+                .target(name: "Domain")
             ],
             settings: .settings(
                 base: SettingsDictionary()
@@ -53,15 +53,15 @@ let project = Project(
             )
         ),
         .target(
-            name: "GeoPresentation",
+            name: "Presentation",
             destinations: .iOS,
             product: .framework,
-            bundleId: ".GeoGuesser.GameEngine",
+            bundleId: ".Pangea.Presentation",
             deploymentTargets: .iOS("18.0"),
             sources: ["Modules/Presentation/Sources/**"],
             resources: ["Modules/Presentation/Resources/**"],
             dependencies: [
-                .target(name: "GeoDomain")
+                .target(name: "Domain")
             ],
             settings: .settings(
                 base: SettingsDictionary()
@@ -70,23 +70,23 @@ let project = Project(
             )
         ),
         .target(
-            name: "GeoGuesser",
+            name: "Pangea",
             destinations: .iOS,
             product: .app,
-            bundleId: ".GeoGuesser",
+            bundleId: ".Pangea",
             deploymentTargets: .iOS("18.0"),
-            infoPlist: .file(path: "GeoGuesser/Info.plist"),
-            sources: ["GeoGuesser/**"],
+            infoPlist: .file(path: "Pangea/Info.plist"),
+            sources: ["Pangea/**"],
             resources: [
-                "GeoGuesser/Assets.xcassets/**",
-                "GeoGuesser/Preview Content/**",
-                "GeoGuesser/**/*.icon"
+                "Pangea/Assets.xcassets/**",
+                "Pangea/Preview Content/**",
+                "Pangea/**/*.icon"
             ],
             dependencies: [
-                .target(name: "GeoDomain"),
-                .target(name: "GeoApplication"),
-                .target(name: "GeoInfrastructure"),
-                .target(name: "GeoPresentation")
+                .target(name: "Domain"),
+                .target(name: "Application"),
+                .target(name: "Infrastructure"),
+                .target(name: "Presentation")
             ],
             settings: .settings(
                 base: SettingsDictionary()
@@ -101,7 +101,7 @@ let project = Project(
                     .merging(
                         ["ASSETCATALOG_COMPILER_APPICON_NAME": "Pangea",
                          "CODE_SIGN_STYLE": "Automatic",
-                         "INFOPLIST_KEY_CFBundleDisplayName": "Pinpoint",
+                         "INFOPLIST_KEY_CFBundleDisplayName": "Pangea",
                          "TARGETED_DEVICE_FAMILY": "1",
                          "SUPPORTS_MACCATALYST": "NO",
                          "SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD": "NO",
@@ -112,7 +112,7 @@ let project = Project(
                          "INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad": "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight",
                          "INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone": "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight",
                          "ENABLE_PREVIEWS": "YES",
-                         "DEVELOPMENT_ASSET_PATHS": "\"GeoGuesser/Preview Content\""
+                         "DEVELOPMENT_ASSET_PATHS": "\"Pangea/Preview Content\""
                         ])
                 
             )

@@ -7,7 +7,7 @@
 
 import Foundation
 @preconcurrency import MapKit
-import GeoDomain
+import Domain
 
 public final class GameViewModel: ObservableObject {
     @Published public private(set) var cameraRegion: MKCoordinateRegion = .init(.world)

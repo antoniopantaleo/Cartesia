@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import GeoDomain
+import Domain
 import MapKit
 
 struct ResultMapView: View {

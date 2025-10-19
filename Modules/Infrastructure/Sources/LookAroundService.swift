@@ -1,6 +1,6 @@
 import Foundation
 @preconcurrency import MapKit
-import GeoDomain
+import Domain
 
 public final class LookAroundService: LookAroundServiceProtocol {
     

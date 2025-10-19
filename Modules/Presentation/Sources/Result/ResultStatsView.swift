@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import GeoDomain
+import Domain
 
 struct ResultStatsView: View {
     let result: GameResult

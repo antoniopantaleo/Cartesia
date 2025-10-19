@@ -1,6 +1,6 @@
 import Foundation
 import CoreLocation
-import GeoDomain
+import Domain
 
 public final class LocationService: LocationServiceProtocol {
     

@@ -7,10 +7,10 @@
 
 import SwiftUI
 import UIKit
-import GeoDomain
-import GeoApplication
-import GeoInfrastructure
-import GeoPresentation
+import Domain
+import Application
+import Infrastructure
+import Presentation
 
 @main
 struct GeoGuesserApp: App {

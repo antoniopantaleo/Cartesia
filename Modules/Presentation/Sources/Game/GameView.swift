@@ -7,7 +7,7 @@
 
 import SwiftUI
 import Combine
-import GeoDomain
+import Domain
 @preconcurrency import MapKit
 import UIKit
 

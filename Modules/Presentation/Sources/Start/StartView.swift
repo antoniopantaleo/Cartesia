@@ -67,7 +67,6 @@ public struct StartView: View {
                     .contentShape(RoundedRectangle(cornerRadius: 23))
                     .foregroundStyle(.primary)
                     Spacer()
-                    PlayerFooter(alias: alias)
                 }
                 .padding(.vertical, 32)
                 .padding(.horizontal, 24)
@@ -369,26 +368,6 @@ private struct PrimaryCTAButtonStyle: ButtonStyle {
             .shadow(color: Color.blue.opacity(0.45), radius: 18, x: 0, y: 14)
             .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .animation(.easeInOut(duration: 0.12), value: configuration.isPressed)
-    }
-}
-
-private struct PlayerFooter: View {
-    let alias: String
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Divider()
-                .background(Color.white.opacity(0.4))
-            
-            Label("Signed in as \(alias)", systemImage: "person.crop.circle.fill")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.secondary)
-            
-            Text("Complete five rounds to unlock the weekly World Tour challenge.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

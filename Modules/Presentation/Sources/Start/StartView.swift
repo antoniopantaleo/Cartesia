@@ -30,6 +30,18 @@ public struct StartView: View {
         self.startGameAction = startGameAction
     }
     
+    private var appVersion: String? {
+        let bundle = Bundle.main
+        guard let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String else {
+            return nil
+        }
+        var appVersion = "v" + version
+        if let buildNumber = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String {
+            appVersion += " (\(buildNumber))"
+        }
+        return appVersion
+    }
+    
     public var body: some View {
             ZStack {
                 AnimatedGradientBackground(isAnimating: $isAnimating)
@@ -70,9 +82,11 @@ public struct StartView: View {
                     .contentShape(RoundedRectangle(cornerRadius: 23))
                     .foregroundStyle(.primary)
                     Spacer()
-                    Text("v0.1-beta")
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .foregroundStyle(.secondary)
+                    if let appVersion {
+                        Text(appVersion)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 .padding(.vertical, 32)
                 .padding(.horizontal, 24)

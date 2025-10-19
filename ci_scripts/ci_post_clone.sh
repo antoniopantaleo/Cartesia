@@ -11,4 +11,4 @@ source /Users/local/.zshrc
 mise settings experimental=true
 mise install
 
-tuist generate
+mise exec -- tuist generate

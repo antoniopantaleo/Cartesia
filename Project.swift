@@ -75,7 +75,7 @@ let project = Project(
             name: appName,
             destinations: .iOS,
             product: .app,
-            bundleId: "\(bundlePrefix).\(appName).Domain",
+            bundleId: "\(bundlePrefix).\(appName)",
             deploymentTargets: .iOS("18.0"),
             infoPlist: .file(path: "\(appName)/Info.plist"),
             sources: ["\(appName)/**"],

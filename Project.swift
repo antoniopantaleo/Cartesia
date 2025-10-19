@@ -1,7 +1,7 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 
-let appName = "Pangea"
+let appName = "Cartesia"
 let marketingVersion = "1.0.0-alpha"
 let buildNumber = "1"
 let bundlePrefix = Environment.bundlePrefix.getString(default: "")

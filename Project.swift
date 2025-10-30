@@ -8,8 +8,10 @@ let bundlePrefix = Environment.bundlePrefix.getString(default: "")
 
 let project = Project(
     name: appName,
-    targets: [
-        .target(
+    targets: .build {
+        µFeature("Start")
+//        µFeature("Game")
+        Target.target(
             name: "Domain",
             destinations: .iOS,
             product: .framework,
@@ -21,8 +23,8 @@ let project = Project(
                     .merging(.xcodeRecommendedSettings)
                     .merging(.approachableConcurrency)
             )
-        ),
-        .target(
+        )
+        Target.target(
             name: "Application",
             destinations: .iOS,
             product: .framework,
@@ -37,8 +39,8 @@ let project = Project(
                     .merging(.xcodeRecommendedSettings)
                     .merging(.approachableConcurrency)
             )
-        ),
-        .target(
+        )
+        Target.target(
             name: "Infrastructure",
             destinations: .iOS,
             product: .framework,
@@ -53,8 +55,8 @@ let project = Project(
                     .merging(.xcodeRecommendedSettings)
                     .merging(.approachableConcurrency)
             )
-        ),
-        .target(
+        )
+        Target.target(
             name: "Presentation",
             destinations: .iOS,
             product: .framework,
@@ -70,8 +72,8 @@ let project = Project(
                     .merging(.xcodeRecommendedSettings)
                     .merging(.approachableConcurrency)
             )
-        ),
-        .target(
+        )
+        Target.target(
             name: appName,
             destinations: .iOS,
             product: .app,
@@ -103,7 +105,9 @@ let project = Project(
                 .target(name: "Domain"),
                 .target(name: "Application"),
                 .target(name: "Infrastructure"),
-                .target(name: "Presentation")
+                .target(name: "Presentation"),
+                .target(name: "Start"),
+                .target(name: "StartInterface"),
             ],
             settings: .settings(
                 base: SettingsDictionary()
@@ -126,5 +130,5 @@ let project = Project(
                         ])
             )
         )
-    ]
+    }
 )

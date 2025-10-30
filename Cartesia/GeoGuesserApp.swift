@@ -12,13 +12,22 @@ import Application
 import Infrastructure
 import Presentation
 
+import Start
+import StartInterface
+
+final class AppRouter: StartRouter {
+    func startGame() {
+        
+    }
+}
+
 @main
 struct GeoGuesserApp: App {
     @StateObject private var appState = AppState()
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            Start.StartView(regions: [], startGameAction: {})
                 .environmentObject(appState)
                 .colorScheme(.dark)
         }

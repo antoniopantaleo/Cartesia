@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Presentation
+import Start
 
 struct ContentView: View {
     @EnvironmentObject var appState: AppState
@@ -14,7 +15,7 @@ struct ContentView: View {
     var body: some View {
         switch appState.currentScreen {
         case .start:
-            StartView {
+                StartView(regions: []) {
                 appState.startNewGame()
             }
         case .game:

@@ -117,7 +117,7 @@ let project = Project(
                     )
                     .merging(.developmentTeam)
                     .merging(
-                        ["ASSETCATALOG_COMPILER_APPICON_NAME": .string(appName),
+                        ["ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
                          "INFOPLIST_KEY_CFBundleDisplayName": .string(appName),
                          "ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS": "YES",
                          "TARGETED_DEVICE_FAMILY": "1",

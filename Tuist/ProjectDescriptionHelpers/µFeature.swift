@@ -18,18 +18,10 @@ public func µFeature(_ name: String) -> [Target] {
             sources: ["\(name)/Sources/**"],
             resources: ["\(name)/Resources/**"],
             dependencies: [
-                .target(name: name + "Interface")
+                .target(name: name + "Interface"),
+                .target(name: name + "Testing"),
             ],
-            settings: .settings(
-                base: SettingsDictionary()
-                    .merging(
-                        ["DEVELOPMENT_ASSET_PATHS": .array(
-                            [
-                                "\(name + "Testing")/Sources"
-                            ]
-                        )]
-                )
-            )
+            settings: .settings(base: SettingsDictionary())
         ),
         .target(
             name: name + "Interface",
@@ -54,7 +46,7 @@ public func µFeature(_ name: String) -> [Target] {
         .target(
             name: name + "Testing",
             destinations: .iOS,
-            product: .framework,
+            product: .staticFramework,
             bundleId: "com.antoniopantaleo.\(name + "Testing")",
             deploymentTargets: .iOS("18.0"),
             sources: ["\(name + "Testing")/Sources/**"],

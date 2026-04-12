@@ -6,11 +6,12 @@
 //
 
 import SwiftUI
+import StartInterface
 import MapKit
 
 struct HeroSection: View {
     let alias: String
-    let regions: [MKCoordinateRegion]
+    let regions: [SamplePin]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {

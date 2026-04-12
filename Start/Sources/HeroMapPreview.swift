@@ -6,58 +6,62 @@
 //
 
 import SwiftUI
+import StartInterface
 import MapKit
 
 struct HeroMapPreview: View {
-    let regions: [MKCoordinateRegion]
+    let regions: [SamplePin]
     @State private var currentRegion: MKCoordinateRegion?
     @State private var cameraPosition: MapCameraPosition
     @State private var currentIndex = 0
     
-    init(regions: [MKCoordinateRegion]) {
+    init(regions: [SamplePin]) {
         self.regions = regions
-        self.currentRegion = regions.first
-        _cameraPosition = State(initialValue: .region(.init(.world)))
+        let regions = regions.map { pin in
+            MKCoordinateRegion(
+                center: pin.coordinate,
+                span: .init(latitudeDelta: 0.1, longitudeDelta: 0.1)
+            )
+        }
+        let initialRegion = regions.randomElement()
+        self.currentRegion = initialRegion
+        _cameraPosition = State(initialValue: .region(initialRegion ?? .init(.world)))
         
     }
     
     var body: some View {
         Map(position: $cameraPosition) {
-            ForEach(regions, id: \.center.latitude) { region in
-            
-                Annotation("City", coordinate: region.center) {
+            ForEach(regions) { region in
+                Annotation(region.title, coordinate: region.coordinate) {
                     Circle()
-                        .fill(.yellow)
+                        .fill(region.color)
                         .frame(width: 14, height: 14)
-                        .shadow(color: .blue.opacity(0.4), radius: 8, x: 0, y: 2)
                 }
             }
         }
-        .mapStyle(.imagery(elevation: .realistic))
+        .mapStyle(.imagery(elevation: .flat))
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(
-            LinearGradient(
-                colors: [.clear, .black.opacity(0.35)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        )
         .task {
-            guard regions.count > 1 else { return }
+            guard !regions.isEmpty else { return }
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(2))
                 currentIndex = (currentIndex + 1) % regions.count
                 let nextRegion = regions[currentIndex]
-                cameraPosition = .region(nextRegion)
+                let mkRegion = MKCoordinateRegion(
+                    center: nextRegion.coordinate,
+                    span: .init(latitudeDelta: 0.2, longitudeDelta: 0.2)
+                )
+                cameraPosition = .region(mkRegion)
+                try? await Task.sleep(for: .seconds(5))
             }
         }
-        .animation(.bouncy, value: cameraPosition)
+        .animation(.easeInOut.speed(3), value: cameraPosition)
     }
 }
 
 #if DEBUG
+import StartTesting
 #Preview(traits: .sizeThatFitsLayout) {
-    HeroMapPreview(regions: [])
+    HeroMapPreview(regions: SamplePin.examples)
+        .frame(width: 250, height: 300)
 }
 #endif

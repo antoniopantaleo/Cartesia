@@ -1,35 +1,28 @@
-//
-//  ContentView.swift
-//  GeoGuesser
-//
-//  Created by Antonio on 19/10/24.
-//
-
 import SwiftUI
-import Presentation
 import Start
+import StartInterface
+import Game
+import Result
+import ResultInterface
 
 struct ContentView: View {
-    @EnvironmentObject var appState: AppState
-    
+    let coordinator: AppCoordinator
+
     var body: some View {
-        switch appState.currentScreen {
+        switch coordinator.currentScreen {
         case .start:
-                StartView(regions: []) {
-                appState.startNewGame()
-            }
+            StartView(
+                router: CartesiaStartRouter(coordinator: coordinator),
+                regions: []
+            )
         case .game:
-            if let viewModel = appState.gameViewModel {
-                GameView(
-                    viewModel: viewModel,
-                    onResult: { appState.showGameResult($0) }
-                )
-            }
-        case .result(let result):
-            GameResultView(
-                result: result,
-                onPlayAgain: appState.startNewGame,
-                onBackToStart: appState.endGame
+            GameScreen(
+                router: CartesiaGameRouter(coordinator: coordinator)
+            )
+        case .result(let summary):
+            ResultScreen(
+                summary: summary,
+                router: CartesiaResultRouter(coordinator: coordinator)
             )
         }
     }

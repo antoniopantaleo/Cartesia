@@ -7,4 +7,8 @@ public struct FakeRouter: StartRouter {
     public func startGame() {
         
     }
+    
+    public func howToPlay() {
+        
+    }
 }

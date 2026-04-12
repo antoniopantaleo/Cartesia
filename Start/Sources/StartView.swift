@@ -4,11 +4,11 @@ import GameKit
 import MapKit
 
 public struct StartView: View {
-    private let regions: [MKCoordinateRegion]
+    private let regions: [SamplePin]
     private let router: StartRouter
     @State private var alias = "Adventurer"
     
-    public init(router: StartRouter, regions: [MKCoordinateRegion]) {
+    public init(router: StartRouter, regions: [SamplePin]) {
         self.router = router
         self.regions = regions
     }
@@ -71,9 +71,8 @@ public struct StartView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-            .padding(.vertical, 32)
+            .padding(.vertical, 40)
             .padding(.horizontal, 24)
-            
         }
         .task {
             refreshAlias()
@@ -94,7 +93,7 @@ public struct StartView: View {
 #if DEBUG
 import StartTesting
 #Preview {
-    StartView(router: FakeRouter(), regions: [])
+    StartView(router: FakeRouter(), regions: SamplePin.examples)
         .preferredColorScheme(.dark)
 }
 #endif

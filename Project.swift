@@ -8,70 +8,11 @@ let bundlePrefix = Environment.bundlePrefix.getString(default: "")
 
 let project = Project(
     name: appName,
-    targets: [
-        .target(
-            name: "Domain",
-            destinations: .iOS,
-            product: .framework,
-            bundleId: "\(bundlePrefix).\(appName).Domain",
-            deploymentTargets: .iOS("18.0"),
-            sources: ["Modules/Domain/Sources/**"],
-            settings: .settings(
-                base: SettingsDictionary()
-                    .merging(.xcodeRecommendedSettings)
-                    .merging(.approachableConcurrency)
-            )
-        ),
-        .target(
-            name: "Application",
-            destinations: .iOS,
-            product: .framework,
-            bundleId: "\(bundlePrefix).\(appName).Application",
-            deploymentTargets: .iOS("18.0"),
-            sources: ["Modules/Application/Sources/**"],
-            dependencies: [
-                .target(name: "Domain")
-            ],
-            settings: .settings(
-                base: SettingsDictionary()
-                    .merging(.xcodeRecommendedSettings)
-                    .merging(.approachableConcurrency)
-            )
-        ),
-        .target(
-            name: "Infrastructure",
-            destinations: .iOS,
-            product: .framework,
-            bundleId: "\(bundlePrefix).\(appName).Infrastracture",
-            deploymentTargets: .iOS("18.0"),
-            sources: ["Modules/Infrastructure/Sources/**"],
-            dependencies: [
-                .target(name: "Domain")
-            ],
-            settings: .settings(
-                base: SettingsDictionary()
-                    .merging(.xcodeRecommendedSettings)
-                    .merging(.approachableConcurrency)
-            )
-        ),
-        .target(
-            name: "Presentation",
-            destinations: .iOS,
-            product: .framework,
-            bundleId: "\(bundlePrefix).\(appName).Presentation",
-            deploymentTargets: .iOS("18.0"),
-            sources: ["Modules/Presentation/Sources/**"],
-            resources: ["Modules/Presentation/Resources/**"],
-            dependencies: [
-                .target(name: "Domain")
-            ],
-            settings: .settings(
-                base: SettingsDictionary()
-                    .merging(.xcodeRecommendedSettings)
-                    .merging(.approachableConcurrency)
-            )
-        ),
-        .target(
+    targets: .build {
+        µFeature("Start")
+        µFeature("Game")
+        µFeature("Result")
+        Target.target(
             name: appName,
             destinations: .iOS,
             product: .app,
@@ -100,10 +41,12 @@ let project = Project(
                 "\(appName)/**/*.icon"
             ],
             dependencies: [
-                .target(name: "Domain"),
-                .target(name: "Application"),
-                .target(name: "Infrastructure"),
-                .target(name: "Presentation")
+                .target(name: "Start"),
+                .target(name: "StartInterface"),
+                .target(name: "Game"),
+                .target(name: "GameInterface"),
+                .target(name: "Result"),
+                .target(name: "ResultInterface"),
             ],
             settings: .settings(
                 base: SettingsDictionary()
@@ -126,5 +69,5 @@ let project = Project(
                         ])
             )
         )
-    ]
+    }
 )

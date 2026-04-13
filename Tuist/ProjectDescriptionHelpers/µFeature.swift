@@ -15,8 +15,8 @@ public func µFeature(_ name: String) -> [Target] {
             product: .framework,
             bundleId: "com.antoniopantaleo.\(name)",
             deploymentTargets: .iOS("18.0"),
-            sources: ["\(name)/Sources/**"],
-            resources: ["\(name)/Resources/**"],
+            sources: ["\(name)/\(name)/Sources/**"],
+            resources: ["\(name)/\(name)/Resources/**"],
             dependencies: [
                 .target(name: name + "Interface"),
                 .target(name: name + "Testing"),
@@ -29,7 +29,7 @@ public func µFeature(_ name: String) -> [Target] {
             product: .framework,
             bundleId: "com.antoniopantaleo.\(name + "Interface")",
             deploymentTargets: .iOS("18.0"),
-            sources: ["\(name + "Interface")/Sources/**"],
+            sources: ["\(name)/\(name + "Interface")/Sources/**"],
         ),
         .target(
             name: name + "Tests",
@@ -37,7 +37,7 @@ public func µFeature(_ name: String) -> [Target] {
             product: .unitTests,
             bundleId: "com.antoniopantaleo.\(name + "Tests")",
             deploymentTargets: .iOS("18.0"),
-            sources: ["\(name + "Tests")/Sources/**"],
+            sources: ["\(name)/\(name + "Tests")/Sources/**"],
             dependencies: [
                 .target(name: name),
                 .target(name: name + "Interface")
@@ -49,8 +49,8 @@ public func µFeature(_ name: String) -> [Target] {
             product: .staticFramework,
             bundleId: "com.antoniopantaleo.\(name + "Testing")",
             deploymentTargets: .iOS("18.0"),
-            sources: ["\(name + "Testing")/Sources/**"],
-            resources: ["\(name + "Testing")/Resources/**"],
+            sources: ["\(name)/\(name + "Testing")/Sources/**"],
+            resources: ["\(name)/\(name + "Testing")/Resources/**"],
             dependencies: [
                 .target(name: name + "Interface")
             ]
@@ -61,8 +61,8 @@ public func µFeature(_ name: String) -> [Target] {
             product: .app,
             bundleId: "com.antoniopantaleo.\(name + "Example")",
             deploymentTargets: .iOS("18.0"),
-            sources: ["\(name + "Example")/Sources/**"],
-            resources: ["\(name + "Example")/Resources/**"],
+            sources: ["\(name)/\(name + "Example")/Sources/**"],
+            resources: ["\(name)/\(name + "Example")/Resources/**"],
             dependencies: [
                 .target(name: name),
                 .target(name: name + "Testing")

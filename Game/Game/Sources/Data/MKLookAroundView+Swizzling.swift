@@ -15,6 +15,7 @@ private var timerWindow: UIWindow?
 
 extension UIViewController {
     public static func swizzleViewWillAppear() {
+        print("✨", "Swizzling view will appear")
         guard
             let originalWillAppear = class_getInstanceMethod(
                 UIViewController.self,
@@ -35,6 +36,7 @@ extension UIViewController {
         guard typeOfSelf.contains("MKLookAroundViewController") else { return }
         let stackView = self.value(forKey: "_infoStackView") as? UIView
         stackView?.removeFromSuperview()
+        (self as? MKLookAroundViewController)?.fullscreen()
     }
     
     /*
@@ -139,7 +141,6 @@ extension MKLookAroundViewController {
         typealias Func = @convention(c) (AnyObject, Selector, Bool, (() -> Void)?) -> Void
         let funcImp = unsafeBitCast(imp, to: Func.self)
         
-        print("🔄 Transitioning to fullscreen")
         funcImp(self, selector, true, {})
     }
 }

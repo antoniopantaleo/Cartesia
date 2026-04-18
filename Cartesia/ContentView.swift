@@ -5,9 +5,16 @@ import Game
 import Result
 import ResultInterface
 
+let gameVM = GameViewModel(
+    gameEngine: GameEngine(
+        locationService: LocationService()
+    ),
+    lookAroundService: LookAroundService()
+)
+
 struct ContentView: View {
     let coordinator: AppCoordinator
-
+    
     var body: some View {
         switch coordinator.currentScreen {
         case .start:
@@ -17,7 +24,10 @@ struct ContentView: View {
             )
         case .game:
             GameScreen(
-                router: CartesiaGameRouter(coordinator: coordinator)
+                router: CartesiaGameRouter(
+                    coordinator: coordinator
+                ),
+                viewModel: gameVM
             )
         case .result(let summary):
             ResultScreen(

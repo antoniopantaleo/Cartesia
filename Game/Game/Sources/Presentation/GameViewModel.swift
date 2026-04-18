@@ -2,6 +2,7 @@ import Foundation
 @preconcurrency import MapKit
 import GameInterface
 
+@MainActor
 public final class GameViewModel: ObservableObject {
     @Published public private(set) var cameraRegion: MKCoordinateRegion = .init(.world)
     @Published public var scene: MKLookAroundScene?
@@ -27,11 +28,14 @@ public final class GameViewModel: ObservableObject {
         gameEngine: GameEngineProtocol,
         lookAroundService: LookAroundServiceProtocol
     ) {
+        print("✨", "VM init")
         self.gameEngine = gameEngine
         self.lookAroundService = lookAroundService
 
         Task { [weak self] in
+            print("✨", "Awaiting new game")
             await self?.startNewGame()
+            print("✨", "Game loaded")
         }
     }
 
@@ -47,7 +51,10 @@ public final class GameViewModel: ObservableObject {
     }
 
     private func loadScene() async {
-        guard let location = currentLocation else { return }
+        print("✨", "Loading scene")
+        guard let location = currentLocation else {
+            return assertionFailure("No current location")
+        }
         isLoadingScene = true
         do {
             let sceneResult = try await lookAroundService.getScene(for: location)

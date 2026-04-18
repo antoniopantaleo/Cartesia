@@ -385,7 +385,9 @@ private struct LookAroundPanel: View {
                         scene: $scene,
                         isNavigationEnabled: .constant(true),
                         fullscreen: .constant(false),
-                        onAppear: {}
+                        onAppear: {
+                            print("✨", "On appear")
+                        }
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
                 } else {

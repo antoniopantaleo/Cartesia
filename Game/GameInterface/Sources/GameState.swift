@@ -2,6 +2,8 @@ import Foundation
 
 public enum GameState {
     case notStarted
-    case running(startTime: Date)
+    case loading
+    case running(location: Coordinates, startTime: Date)
     case completed(result: GameResult)
+    case failed
 }

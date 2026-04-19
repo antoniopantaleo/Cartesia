@@ -40,7 +40,8 @@ public func µFeature(_ name: String) -> [Target] {
             sources: ["\(name)/\(name + "Tests")/Sources/**"],
             dependencies: [
                 .target(name: name),
-                .target(name: name + "Interface")
+                .target(name: name + "Interface"),
+                .target(name: name + "Testing")
             ]
         ),
         .target(

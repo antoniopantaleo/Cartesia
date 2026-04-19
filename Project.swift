@@ -31,14 +31,16 @@ let project = Project(
                     "UISupportedInterfaceOrientations": .array([
                         .string("UIInterfaceOrientationPortrait")
                     ]),
-                    "MKDirectionsApplicationSupportedModes": .array([])
+                    "MKDirectionsApplicationSupportedModes": .array([]),
+                    "ITSAppUsesNonExemptEncryption": .boolean(false)
                 ]
             ),
             sources: ["\(appName)/**"],
             resources: [
                 "\(appName)/Assets.xcassets/**",
                 "\(appName)/Preview Content/**",
-                "\(appName)/**/*.icon"
+                "\(appName)/**/*.icon",
+                "\(appName)/PrivacyInfo.xcprivacy"
             ],
             dependencies: [
                 .target(name: "Start"),
@@ -67,6 +69,23 @@ let project = Project(
                          "ENABLE_PREVIEWS": "YES",
                          "DEVELOPMENT_ASSET_PATHS": "\"\(appName)/Preview Content\""
                         ])
+            )
+        )
+        Target.target(
+            name: "\(appName)Tests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.antoniopantaleo.\(appName)Tests",
+            deploymentTargets: .iOS("18.0"),
+            sources: ["\(appName)Tests/Sources/**"],
+            dependencies: [
+                .target(name: appName),
+                .target(name: "ResultInterface"),
+                .target(name: "ResultTesting")
+            ],
+            settings: .settings(
+                base: SettingsDictionary()
+                    .merging(.approachableConcurrency)
             )
         )
     }

@@ -1,12 +1,58 @@
 import SwiftUI
+import GameInterface
 @preconcurrency import MapKit
+
+protocol ReverseGeocodingProtocol {
+    func getCityName(from coordinates: Coordinates) async throws -> String
+}
+
+struct FakeReverseGeocoding: ReverseGeocodingProtocol {
+    func getCityName(from coordinates: Coordinates) async throws -> String {
+        "Mocked"
+    }
+}
+
+struct MKReverseGeocoding: ReverseGeocodingProtocol {
+    func getCityName(from coordinates: Coordinates) async throws -> String {
+        let location = CLLocation(
+            latitude: coordinates.latitude,
+            longitude: coordinates.longitude
+        )
+        if #available(iOS 26.0, *) {
+            let request = MKReverseGeocodingRequest(location: location)
+            let items = try await request?.mapItems
+            return items?.first?.addressRepresentations?.cityName ?? "ERROR"
+        } else {
+            return ""
+        }
+    }
+}
+
+@Observable final class GameOverlaySheetViewModel {
+    
+    private let reverseGeocoder: ReverseGeocodingProtocol = MKReverseGeocoding()
+    
+    var selectedCoordinate: Coordinates?
+    var selectedCityName: String?
+    
+    func didSelectCoordinate(_ coordinate: Coordinates) {
+        selectedCoordinate = coordinate
+        Task {
+            selectedCityName = try? await reverseGeocoder
+                .getCityName(from: coordinate)
+        }
+    }
+}
 
 struct GameOverlaySheet: View {
     @State private var selectedDetent: PresentationDetent = Self.collapsedDetent
     @State private var cameraPosition: MapCameraPosition = .region(.init(.world))
-    @State private var selectedCoordinate: CLLocationCoordinate2D?
+    @State private var viewModel = GameOverlaySheetViewModel()
+    
+    @Namespace private var hero
 
     private static let collapsedDetent = PresentationDetent.height(72)
+    let didConfirmPosition: (Coordinates) -> ()
 
     var body: some View {
         Color.clear
@@ -17,9 +63,7 @@ struct GameOverlaySheet: View {
                         [Self.collapsedDetent, .medium, .large],
                         selection: $selectedDetent
                     )
-                    .presentationDragIndicator(
-                        selectedDetent == Self.collapsedDetent ? .hidden
-                        : .visible)
+                    .presentationDragIndicator(selectedDetent == Self.collapsedDetent ? .hidden : .visible)
                     .presentationBackgroundInteraction(.enabled)
                     .presentationBackground(Color(red: 0.97, green: 0.95, blue: 0.92))
                     .interactiveDismissDisabled()
@@ -31,13 +75,15 @@ struct GameOverlaySheet: View {
 
     @ViewBuilder
     private var sheetContent: some View {
-        if selectedDetent == Self.collapsedDetent {
-            collapsedBar
-                .onTapGesture {
-                    selectedDetent = .medium
-                }
-        } else {
+        ViewThatFits(in: .vertical) {
             expandedContent
+            VStack {
+                collapsedBar
+                Spacer()
+            }
+            .onTapGesture {
+                selectedDetent = .medium
+            }
         }
     }
 
@@ -48,15 +94,16 @@ struct GameOverlaySheet: View {
             mapThumbnail
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("WHERE ARE YOU?")
+                Text(viewModel.selectedCoordinate != nil ? "YOUR GUESS" : "WHERE ARE YOU?")
                     .font(.system(size: 10, weight: .semibold))
-                    .tracking(1.5)
                     .foregroundStyle(Color(white: 0.5))
-                Text("Drop a pin")
+                    .matchedGeometryEffect(id: "guess", in: hero)
+                Text(viewModel.selectedCityName ?? "Drop a pin")
                     .font(.title3.weight(.semibold))
                     .foregroundStyle(Color(white: 0.15))
+                    .matchedGeometryEffect(id: "city", in: hero)
             }
-
+            .animation(.default, value: viewModel.selectedCityName)
             Spacer()
 
             Image(systemName: "mappin.circle.fill")
@@ -65,6 +112,7 @@ struct GameOverlaySheet: View {
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 14)
+        .contentShape(Capsule())
     }
 
     private var mapThumbnail: some View {
@@ -98,20 +146,22 @@ struct GameOverlaySheet: View {
     private var expandedHeader: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("TAP TO PLACE YOUR GUESS")
+                Text(viewModel.selectedCityName == nil ? "TAP TO PLACE YOUR GUESS" : "YOUR GUESS")
                     .font(.system(size: 10, weight: .semibold))
                     .tracking(1.5)
                     .foregroundStyle(Color(white: 0.5))
-                Text("Where in the world?")
+                    .matchedGeometryEffect(id: "guess", in: hero)
+                Text(viewModel.selectedCityName ?? "Where in the world?")
                     .font(.title.weight(.bold))
                     .foregroundStyle(Color(white: 0.15))
+                    .matchedGeometryEffect(id: "city", in: hero)
             }
+            .contentTransition(.numericText())
+            .animation(.default, value: viewModel.selectedCityName)
 
             Spacer()
 
-            Button {
-                selectedDetent = Self.collapsedDetent
-            } label: {
+            Button { selectedDetent = Self.collapsedDetent } label: {
                 Image(systemName: "xmark")
                     .font(.caption.weight(.bold))
                     .foregroundStyle(Color(white: 0.4))
@@ -123,24 +173,40 @@ struct GameOverlaySheet: View {
     }
 
     private var mapContent: some View {
-        
         MapReader { reader in
             Map(position: $cameraPosition) {
-                if let selected = selectedCoordinate {
-                    Annotation("", coordinate: selected, anchor: .bottom) {
+                if let selected = viewModel.selectedCoordinate {
+                    let cl = CLLocationCoordinate2D(
+                        latitude: selected.latitude,
+                        longitude: selected.longitude
+                    )
+                    Annotation("", coordinate: cl, anchor: .bottom) {
                         Image(systemName: "mappin.circle.fill")
                             .font(.largeTitle)
                             .foregroundStyle(.red)
                     }
                 }
             }
-            .mapStyle(.standard(elevation: .flat))
+            .onMapCameraChange { context in
+                cameraPosition = .region(context.region)
+            }
+            .mapStyle(
+                .hybrid(
+                    elevation: .flat,
+                    pointsOfInterest: .all,
+                    showsTraffic: false
+                )
+            )
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .simultaneousGesture(
                 SpatialTapGesture()
                     .onEnded { event in
                         if let coordinate = reader.convert(event.location, from: .local) {
-                            selectedCoordinate = coordinate
+                            let m = Coordinates(
+                                latitude: coordinate.latitude,
+                                longitude: coordinate.longitude
+                            )
+                            viewModel.didSelectCoordinate(m)
                         }
                     }
             )
@@ -151,9 +217,13 @@ struct GameOverlaySheet: View {
 
     @ViewBuilder
     private var bottomAction: some View {
-        if selectedCoordinate != nil {
+        if let selectedCoordinate = viewModel.selectedCoordinate {
             Button {
-                // TODO: confirm guess
+                let coordinates = Coordinates(
+                    latitude: selectedCoordinate.latitude,
+                    longitude: selectedCoordinate.longitude
+                )
+                didConfirmPosition(coordinates)
             } label: {
                 HStack(spacing: 10) {
                     Image(systemName: "mappin.and.ellipse")
@@ -175,10 +245,6 @@ struct GameOverlaySheet: View {
                 .shadow(color: Color(red: 0.85, green: 0.35, blue: 0.25).opacity(0.35), radius: 12, y: 6)
             }
             .buttonStyle(.plain)
-            .transition(.asymmetric(
-                insertion: .move(edge: .bottom).combined(with: .opacity),
-                removal: .opacity
-            ))
         } else {
             Label("Tap the map to select a position", systemImage: "scope")
                 .font(.subheadline.weight(.medium))
@@ -189,5 +255,5 @@ struct GameOverlaySheet: View {
 }
 
 #Preview {
-    GameOverlaySheet()
+    GameOverlaySheet { _ in }
 }

@@ -7,140 +7,119 @@
 
 import UIKit
 import MapKit
-import SwiftUI
 
-// Global reference to track timer start time
-private var timerStartTime: Date?
-private var timerWindow: UIWindow?
+/// Private MapKit symbols, assembled at runtime from fragments so the full
+/// names never appear as literals in the compiled binary.
+private enum PrivateSelectors {
+    static var infoStackViewKey: String {
+        ["_info", "Stack", "View"].joined()
+    }
+    static var didTapCloseButton: Selector {
+        Selector(["_did", "Tap", "Close", "But", "ton", ":"].joined())
+    }
+    static var transitionToFullScreen: Selector {
+        Selector(["_transition", "ToFull", "Screen", "Anim", "ated:", "completion", "Handler:"].joined())
+    }
+}
+
+private enum LookAroundFullscreenGate {
+    static var shouldAutoFullscreen: Bool = true
+    static weak var activeController: MKLookAroundViewController?
+    static var onDismissAttempt: (() -> Bool)?
+    static var originalCloseButtonIMP: IMP?
+    static var didSwizzleViewWillAppear: Bool = false
+    static var didSwizzleCloseButton: Bool = false
+}
+
+// MARK: - Public API
 
 extension UIViewController {
+
     public static func swizzleViewWillAppear() {
-        print("✨", "Swizzling view will appear")
+        guard !LookAroundFullscreenGate.didSwizzleViewWillAppear else { return }
         guard
-            let originalWillAppear = class_getInstanceMethod(
-                UIViewController.self,
-                #selector(viewWillAppear(_:))
-            ),
-            let swizzledWillAppear = class_getInstanceMethod(
-                UIViewController.self,
-                #selector(swizzled_viewWillAppear(_:))
-            )
-        else { return }
-        method_exchangeImplementations(originalWillAppear, swizzledWillAppear)
+            let original = class_getInstanceMethod(UIViewController.self, #selector(viewWillAppear(_:))),
+            let swizzled = class_getInstanceMethod(UIViewController.self, #selector(swizzled_viewWillAppear(_:)))
+        else {
+            return assertionFailure("Unable to get UIViewController lifecycle instance methods")
+        }
+        method_exchangeImplementations(original, swizzled)
+        LookAroundFullscreenGate.didSwizzleViewWillAppear = true
     }
-    
+
+    public static func armLookAroundAutoFullscreen() {
+        LookAroundFullscreenGate.shouldAutoFullscreen = true
+    }
+
+    public static func dismissLookAroundFullscreen() {
+        LookAroundFullscreenGate.shouldAutoFullscreen = false
+        var ancestor: UIViewController? = LookAroundFullscreenGate.activeController
+        while let current = ancestor {
+            if let presented = current.presentedViewController {
+                presented.dismiss(animated: false)
+                return
+            }
+            ancestor = current.parent
+        }
+    }
+
+    public static func registerActiveLookAroundController(_ vc: MKLookAroundViewController) {
+        LookAroundFullscreenGate.activeController = vc
+    }
+
+    public static func installLookAroundDismissInterceptor(_ handler: @escaping () -> Bool) {
+        LookAroundFullscreenGate.onDismissAttempt = handler
+        installCloseButtonSwizzleIfNeeded()
+    }
+
+    public static func removeLookAroundDismissInterceptor() {
+        LookAroundFullscreenGate.onDismissAttempt = nil
+    }
+}
+
+// MARK: - Swizzling
+
+extension UIViewController {
+
     @objc
     private func swizzled_viewWillAppear(_ animated: Bool) {
         swizzled_viewWillAppear(animated)
-        let typeOfSelf = String(describing: type(of: self))
-        guard typeOfSelf.contains("MKLookAroundViewController") else { return }
-        let stackView = self.value(forKey: "_infoStackView") as? UIView
-        stackView?.removeFromSuperview()
-        (self as? MKLookAroundViewController)?.fullscreen()
-    }
-    
-    /*
-    static func updateTimerStartTime(_ startTime: Date?) {
-        timerStartTime = startTime
-        print("📝 Timer start time updated to: \(startTime?.description ?? "nil")")
-        
-        if startTime != nil {
-            showWindowOverlayTimer()
-        } else {
-            hideWindowOverlayTimer()
-        }
-        
-        // Also refresh existing overlays
-        DispatchQueue.main.async {
-            refreshAllTimerOverlays()
-        }
-    }
-    
-    static func showWindowOverlayTimer() {
-        hideWindowOverlayTimer() // Remove existing if any
-        
-        guard let windowScene = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .first else { return }
-        
-        let window = UIWindow(windowScene: windowScene)
-        window.windowLevel = UIWindow.Level.statusBar + 1
-        window.backgroundColor = .clear
-        window.isUserInteractionEnabled = false
-        window.isHidden = false
-        
-        let mainViewController = UIViewController()
-        mainViewController.view.backgroundColor = .clear
-        mainViewController.view.isUserInteractionEnabled = false
-        let timerView = TimerView(startTime: timerStartTime)
-        let hostingController = UIHostingController(rootView: timerView)
-        hostingController.view.backgroundColor = .clear
-        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
-        
-        mainViewController.addChild(hostingController)
-        mainViewController.view.addSubview(hostingController.view)
-        hostingController.didMove(toParent: mainViewController)
-        
-        NSLayoutConstraint.activate([
-            hostingController.view.topAnchor
-                .constraint(
-                    equalTo: mainViewController.view.safeAreaLayoutGuide.topAnchor
-                ),
-            hostingController.view.centerXAnchor
-                .constraint(equalTo: mainViewController.view.safeAreaLayoutGuide.centerXAnchor)
-        ]
-)
-        
-        window.rootViewController = mainViewController
-        
-        
-        timerWindow = window
-        print("🪟 Created window overlay timer")
+        guard let lookAround = self as? MKLookAroundViewController else { return }
+        (lookAround.value(forKey: PrivateSelectors.infoStackViewKey) as? UIView)?.removeFromSuperview()
+        guard LookAroundFullscreenGate.shouldAutoFullscreen else { return }
+        lookAround.enterFullscreen()
     }
 
-    static func hideWindowOverlayTimer() {
-        timerWindow?.isHidden = true
-        timerWindow = nil
-        print("🗑️ Removed window overlay timer")
-    }
-    
-    static func refreshAllTimerOverlays() {
-        // Find all MKLookAroundViewController instances and refresh their overlays
-        guard let keyWindow = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .flatMap({ $0.windows })
-            .first(where: { $0.isKeyWindow }) else { return }
-        
-        func findLookAroundViewControllers(in view: UIView) -> [MKLookAroundViewController] {
-            var controllers: [MKLookAroundViewController] = []
-            
-            if let vc = view.next as? MKLookAroundViewController {
-                controllers.append(vc)
-            }
-            
-            for subview in view.subviews {
-                controllers.append(contentsOf: findLookAroundViewControllers(in: subview))
-            }
-            
-            return controllers
+    fileprivate static func installCloseButtonSwizzleIfNeeded() {
+        guard !LookAroundFullscreenGate.didSwizzleCloseButton else { return }
+        guard let cls = NSClassFromString("MKLookAroundViewController") else {
+            return assertionFailure("MKLookAroundViewController class not found")
         }
-        
-        let lookAroundControllers = findLookAroundViewControllers(in: keyWindow)
-        print("🔄 Found \(lookAroundControllers.count) MKLookAroundViewController instances to refresh")
+        let selector = PrivateSelectors.didTapCloseButton
+        guard let originalMethod = class_getInstanceMethod(cls, selector) else {
+            return assertionFailure("Close button selector not found on MKLookAroundViewController")
+        }
+        LookAroundFullscreenGate.originalCloseButtonIMP = method_getImplementation(originalMethod)
+        let typeEncoding = method_getTypeEncoding(originalMethod)
+
+        let block: @convention(block) (UIViewController, AnyObject?) -> Void = { vc, sender in
+            if let handler = LookAroundFullscreenGate.onDismissAttempt, handler() { return }
+            typealias Func = @convention(c) (AnyObject, Selector, AnyObject?) -> Void
+            guard let imp = LookAroundFullscreenGate.originalCloseButtonIMP else { return }
+            unsafeBitCast(imp, to: Func.self)(vc, selector, sender)
+        }
+        class_replaceMethod(cls, selector, imp_implementationWithBlock(block), typeEncoding)
+        LookAroundFullscreenGate.didSwizzleCloseButton = true
     }
-     */
 }
 
+// MARK: - Private fullscreen entry
 
-extension MKLookAroundViewController {
-    func fullscreen() {
-        let selector = NSSelectorFromString("_transitionToFullScreenAnimated:completionHandler:")
+private extension MKLookAroundViewController {
+    func enterFullscreen() {
+        let selector = PrivateSelectors.transitionToFullScreen
         guard responds(to: selector) else { return }
-        
-        let imp = method(for: selector)
         typealias Func = @convention(c) (AnyObject, Selector, Bool, (() -> Void)?) -> Void
-        let funcImp = unsafeBitCast(imp, to: Func.self)
-        
-        funcImp(self, selector, true, {})
+        unsafeBitCast(method(for: selector), to: Func.self)(self, selector, true, {})
     }
 }

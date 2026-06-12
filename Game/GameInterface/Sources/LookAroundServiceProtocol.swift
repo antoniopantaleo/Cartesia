@@ -1,5 +1,5 @@
 import Foundation
 
 public protocol LookAroundServiceProtocol: AnyObject {
-    func getScene(for coordinates: Coordinates) async throws -> Any?
+    func hasCoverage(at coordinates: Coordinates) async -> Bool
 }

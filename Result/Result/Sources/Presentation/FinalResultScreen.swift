@@ -1,19 +1,19 @@
 import SwiftUI
 import ResultInterface
 
-public struct ResultScreen: View {
-    private let summary: RoundSummary
+public struct FinalResultScreen: View {
+    private let summary: GameSummary
     private let router: ResultRouter
 
-    public init(summary: RoundSummary, router: ResultRouter) {
+    public init(summary: GameSummary, router: ResultRouter) {
         self.summary = summary
         self.router = router
     }
 
     public var body: some View {
-        ResultView(
+        FinalResultView(
             summary: summary,
-            onContinue: router.nextRound,
+            onPlayAgain: router.playAgain,
             onBackToStart: router.backToStart
         )
         .colorScheme(.dark)

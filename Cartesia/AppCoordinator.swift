@@ -1,4 +1,5 @@
 import Foundation
+import Game
 import GameInterface
 import ResultInterface
 import StartInterface
@@ -8,20 +9,41 @@ final class AppCoordinator {
     enum Screen {
         case start
         case game
-        case result(RoundSummary)
+        case roundResult(RoundSummary)
+        case finalResult(GameSummary)
     }
 
     private(set) var currentScreen: Screen = .start
+    private(set) var session = GameSession()
+    /// One shuffled location deck per game session, so the 5 rounds never repeat a place.
+    private(set) var sessionLocationService: LocationServiceProtocol = LocationService()
+    /// Forces GameScreen recreation between rounds via `.id()`.
+    private(set) var roundID: Int = 0
+    var isHowToPlayPresented = false
 
-    func navigateToGame() {
+    func startNewSession() {
+        session = GameSession()
+        sessionLocationService = LocationService()
+        roundID += 1
         currentScreen = .game
     }
 
-    func navigateToResult(_ summary: RoundSummary) {
-        currentScreen = .result(summary)
+    func advanceToNextRound() {
+        roundID += 1
+        currentScreen = .game
+    }
+
+    func completeRound(_ summary: RoundSummary) {
+        session.record(summary)
+        currentScreen = .roundResult(summary)
+    }
+
+    func showFinalResult() {
+        currentScreen = .finalResult(session.summary)
     }
 
     func navigateToStart() {
+        session = GameSession()
         currentScreen = .start
     }
 }
@@ -36,11 +58,11 @@ final class CartesiaStartRouter: StartRouter {
     }
 
     func startGame() {
-        coordinator.navigateToGame()
+        coordinator.startNewSession()
     }
 
     func howToPlay() {
-        // TODO: implement HowToPlay feature
+        coordinator.isHowToPlayPresented = true
     }
 }
 
@@ -53,6 +75,8 @@ final class CartesiaGameRouter: GameRouter {
 
     func didCompleteRound(_ result: GameResult) {
         let summary = RoundSummary(
+            roundNumber: coordinator.session.currentRoundNumber,
+            totalRounds: GameSession.roundsPerGame,
             distance: result.distance,
             formattedDistance: result.formattedDistance,
             actualLocation: .init(
@@ -66,7 +90,11 @@ final class CartesiaGameRouter: GameRouter {
             timeTaken: result.timeTaken,
             formattedTime: result.formattedTime
         )
-        coordinator.navigateToResult(summary)
+        coordinator.completeRound(summary)
+    }
+
+    func didLeaveRound() {
+        coordinator.navigateToStart()
     }
 }
 
@@ -77,8 +105,16 @@ final class CartesiaResultRouter: ResultRouter {
         self.coordinator = coordinator
     }
 
+    func nextRound() {
+        if coordinator.session.isComplete {
+            coordinator.showFinalResult()
+        } else {
+            coordinator.advanceToNextRound()
+        }
+    }
+
     func playAgain() {
-        coordinator.navigateToGame()
+        coordinator.startNewSession()
     }
 
     func backToStart() {

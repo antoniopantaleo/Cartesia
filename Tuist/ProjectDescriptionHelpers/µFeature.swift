@@ -40,7 +40,8 @@ public func µFeature(_ name: String) -> [Target] {
             sources: ["\(name)/\(name + "Tests")/Sources/**"],
             dependencies: [
                 .target(name: name),
-                .target(name: name + "Interface")
+                .target(name: name + "Interface"),
+                .target(name: name + "Testing")
             ]
         ),
         .target(
@@ -61,12 +62,24 @@ public func µFeature(_ name: String) -> [Target] {
             product: .app,
             bundleId: "com.antoniopantaleo.\(name + "Example")",
             deploymentTargets: .iOS("18.0"),
+            infoPlist: .extendingDefault(with: [
+                "UIApplicationSceneManifest": .dictionary([
+                    "UIApplicationSupportsMultipleScenes": .boolean(false),
+                    "UISceneConfigurations": .dictionary([:])
+                ])
+            ]),
             sources: ["\(name)/\(name + "Example")/Sources/**"],
             resources: ["\(name)/\(name + "Example")/Resources/**"],
             dependencies: [
                 .target(name: name),
                 .target(name: name + "Testing")
-            ]
+            ],
+            settings: .settings(
+                base: SettingsDictionary()
+                    .merging([
+                        "TARGETED_DEVICE_FAMILY": "1",
+                    ])
+            )
         )
     ]
 }

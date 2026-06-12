@@ -2,9 +2,17 @@ import GameInterface
 
 public final class FakeLookAroundService: LookAroundServiceProtocol {
 
-    public init() {}
+    /// Coverage answers returned per call, in order. When exhausted, returns `false`.
+    public var coverageResults: [Bool]
+    public private(set) var requestedCoordinates: [Coordinates] = []
 
-    public func getScene(for coordinates: Coordinates) async throws -> Any? {
-        nil
+    public init(coverageResults: [Bool] = []) {
+        self.coverageResults = coverageResults
+    }
+
+    public func hasCoverage(at coordinates: Coordinates) async -> Bool {
+        requestedCoordinates.append(coordinates)
+        guard !coverageResults.isEmpty else { return false }
+        return coverageResults.removeFirst()
     }
 }

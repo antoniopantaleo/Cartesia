@@ -8,7 +8,7 @@ public final class FakeGameEngine: GameEngineProtocol {
 
     public func startNewGame() async {
         currentLocation = Coordinates(latitude: 48.8584, longitude: 2.2945)
-        gameState = .running(startTime: .now)
+        gameState = .running(location: currentLocation!, startTime: .now)
     }
 
     public func submitGuess(_ coordinates: Coordinates) async {

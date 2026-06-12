@@ -3,87 +3,113 @@ import ResultInterface
 
 struct ResultView: View {
     let summary: RoundSummary
-    private let onPlayAgain: () -> Void
+    private let onContinue: () -> Void
     private let onBackToStart: () -> Void
-    @State private var animateSummary = false
+    @State private var animateScore = false
 
-    private var score: Int {
-        let maxDistance: Double = 20_037_500
-        let distanceRatio = min(summary.distance / maxDistance, 1.0)
-        let baseScore = max(0, Int(10_000 * (1 - distanceRatio)))
-        let timeBonus = max(0, Int(1_000 * max(0, 1 - summary.timeTaken / 180)))
-        return baseScore + timeBonus
-    }
-
-    private var accuracyPercentage: Double {
-        let maxDistance: Double = 20_037_500
-        let ratio = max(0, 1 - min(summary.distance / maxDistance, 1.0))
-        return ratio * 100
+    private var distanceCaption: String {
+        "You were \(summary.formattedDistance) off."
     }
 
     init(
         summary: RoundSummary,
-        onPlayAgain: @escaping () -> Void,
+        onContinue: @escaping () -> Void,
         onBackToStart: @escaping () -> Void
     ) {
         self.summary = summary
-        self.onPlayAgain = onPlayAgain
+        self.onContinue = onContinue
         self.onBackToStart = onBackToStart
     }
 
     var body: some View {
         ZStack {
-            ResultBackground()
+            PaperBackground()
 
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 28) {
-                    ResultHeaderView(
-                        score: score,
-                        distance: summary.formattedDistance,
-                        time: summary.formattedTime,
-                        accuracy: accuracyPercentage,
-                        animate: $animateSummary
+                VStack(spacing: 32) {
+                    TopBar(
+                        title: "Round \(summary.roundNumber) of \(summary.totalRounds)",
+                        onClose: onBackToStart
                     )
 
-                    ResultMapView(summary: summary)
+                    ScoreHeroView(score: animateScore ? summary.score : 0)
+
+                    StampRowView(
+                        accuracy: Scoring.accuracy(distance: summary.distance),
+                        distance: summary.formattedDistance,
+                        time: summary.formattedTime
+                    )
+
+                    ResultMapView(summary: summary, distanceCaption: distanceCaption)
 
                     ActionButtonsView(
-                        onPlayAgain: onPlayAgain,
+                        primaryTitle: summary.isFinalRound ? "See final score" : "Next round",
+                        primaryIcon: summary.isFinalRound ? "flag.checkered" : "arrow.right",
+                        onPrimary: onContinue,
                         onBackToStart: onBackToStart
                     )
+
+                    Color.clear.frame(height: 12)
                 }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 36)
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
             }
         }
+        .environment(\.colorScheme, .light)
+        .sensoryFeedback(.success, trigger: animateScore)
         .onAppear {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
-                animateSummary = true
+            withAnimation(.smooth(duration: 1.2)) {
+                animateScore = true
             }
         }
     }
 }
 
-private struct ResultBackground: View {
+struct TopBar: View {
+    var title: String = "Round Complete"
+    let onClose: () -> Void
+
     var body: some View {
-        LinearGradient(
-            colors: [Color(#colorLiteral(red: 0.031, green: 0.035, blue: 0.089, alpha: 1)), Color(#colorLiteral(red: 0.1, green: 0.086, blue: 0.2, alpha: 1))],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
-        .overlay(
-            ZStack {
-                Circle()
-                    .fill(Color.blue.opacity(0.18))
-                    .frame(width: 600, height: 600)
-                    .offset(x: -160, y: -260)
-                Circle()
-                    .fill(Color.purple.opacity(0.2))
-                    .frame(width: 540, height: 540)
-                    .offset(x: 200, y: 240)
+        HStack {
+            Button(action: onClose) {
+                Image(systemName: "xmark")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(PaperTheme.inkPrimary)
+                    .frame(width: 36, height: 36)
+                    .background(
+                        Circle().fill(PaperTheme.background)
+                    )
+                    .overlay(
+                        Circle().stroke(PaperTheme.inkHairline, lineWidth: 1)
+                    )
             }
-            .blur(radius: 200)
-        )
+            .buttonStyle(.plain)
+
+            Spacer()
+
+            Text(title)
+                .eyebrowStyle()
+
+            Spacer()
+
+            Color.clear.frame(width: 36, height: 36)
+        }
+    }
+}
+
+struct PaperBackground: View {
+    var body: some View {
+        ZStack {
+            PaperTheme.background.ignoresSafeArea()
+            GeometryReader { proxy in
+                Circle()
+                    .fill(PaperTheme.warmOrange.opacity(0.08))
+                    .frame(width: proxy.size.width * 0.9)
+                    .offset(x: proxy.size.width * 0.3, y: -proxy.size.height * 0.2)
+                    .blur(radius: 80)
+            }
+            .ignoresSafeArea()
+        }
     }
 }

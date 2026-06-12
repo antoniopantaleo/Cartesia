@@ -4,15 +4,19 @@ import GameInterface
 
 public final class LocationService: LocationServiceProtocol {
 
-    public init() {}
+    /// Shuffled deck dealt without repetition, so locations never repeat
+    /// within the lifetime of this service (one game session).
+    private var deck: [CuratedLocation]
+
+    public init() {
+        deck = CuratedLocations.all.shuffled()
+    }
 
     public func generateRandomLocation() async -> Coordinates {
-        let coordinates: [String: Coordinates] = [
-            "Tokyo": Coordinates(latitude: 35.6895, longitude: 139.6917),
-            "Turin": Coordinates(latitude: 45.06935, longitude: 7.61494),
-            "Oslo": Coordinates(latitude: 59.92485, longitude: 10.75918)
-        ]
-        return coordinates.values.randomElement()!
+        if deck.isEmpty {
+            deck = CuratedLocations.all.shuffled()
+        }
+        return deck.removeLast().coordinates
     }
 
     public func calculateDistance(from: Coordinates, to: Coordinates) -> Double {

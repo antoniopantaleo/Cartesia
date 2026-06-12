@@ -1,37 +1,27 @@
-//
-//  StartButton.swift
-//  Cartesia
-//
-//  Created by Antonio on 29/10/25.
-//
-
 import SwiftUI
 
 struct StartButton: View {
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Start exploration")
-                        .font(.title3.weight(.semibold))
-                    Text("Five rounds · New itinerary every game")
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.8))
-                }
-                Spacer()
+            HStack(spacing: 10) {
+                Text("Start exploring")
+                    .font(.headline)
                 Image(systemName: "arrow.right")
-                    .font(.title3.bold())
+                    .font(.subheadline.weight(.bold))
             }
             .foregroundStyle(.white)
         }
         .buttonStyle(PrimaryCTAButtonStyle())
+        .sensoryFeedback(.impact(weight: .light), trigger: false)
     }
 }
 
 #if DEBUG
 #Preview(traits: .sizeThatFitsLayout) {
     StartButton {}
+        .padding()
+        .background(PaperTheme.background)
 }
 #endif
